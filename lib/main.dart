@@ -3,8 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'firebase_options.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pbase_peminjaman_alat_lab/constants/constants.dart';
-import 'package:pbase_peminjaman_alat_lab/screens/auth/splash_screen.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/auth/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
