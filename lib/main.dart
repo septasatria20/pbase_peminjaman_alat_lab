@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/auth/splash_screen.dart';
@@ -18,6 +19,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        Provider<FirebaseFirestore>(create: (_) => FirebaseFirestore.instance),
         ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<UserProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<AlatProvider>()),

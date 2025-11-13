@@ -253,14 +253,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   const Spacer(),
-                  Text(
-                    alat.nama,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: isTersedia ? Colors.black87 : Colors.grey[600]!,
-                    ),
-                  ),
+                  // Highlight hasil pencarian
+                  _highlightText(alat.nama, _searchQuery, isTersedia),
                   const SizedBox(height: 4),
                   Text(
                     'Stok: ${alat.jumlah}',
@@ -275,6 +269,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _highlightText(String fullText, String query, bool isTersedia) {
+    if (query.isEmpty) {
+      return Text(
+        fullText,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: isTersedia ? Colors.black87 : Colors.grey[600]!,
+        ),
+      );
+    }
+
+    final lowerText = fullText.toLowerCase();
+    final lowerQuery = query.toLowerCase();
+
+    final startIndex = lowerText.indexOf(lowerQuery);
+    if (startIndex == -1) {
+      return Text(
+        fullText,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: isTersedia ? Colors.black87 : Colors.grey[600]!,
+        ),
+      );
+    }
+
+    final endIndex = startIndex + lowerQuery.length;
+
+    return RichText(
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: fullText.substring(0, startIndex),
+            style: TextStyle(color: Colors.black87),
+          ),
+          TextSpan(
+            text: fullText.substring(startIndex, endIndex),
+            style: const TextStyle(
+              color: colorMaroon,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          TextSpan(
+            text: fullText.substring(endIndex),
+            style: TextStyle(color: Colors.black87),
+          ),
+        ],
+      ),
     );
   }
 }
