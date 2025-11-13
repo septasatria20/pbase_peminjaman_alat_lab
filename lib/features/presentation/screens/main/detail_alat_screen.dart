@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'form_peminjaman_screen.dart';
 
-// Provider Firebase Firestore
-final firestoreProvider = Provider<FirebaseFirestore>((ref) {
-  return FirebaseFirestore.instance;
-});
-
-class DetailAlatScreen extends ConsumerWidget {
+class DetailAlatScreen extends StatelessWidget {
   final String alatId;
 
   const DetailAlatScreen({super.key, required this.alatId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final firestore = ref.watch(firestoreProvider);
+  Widget build(BuildContext context) {
+    final firestore = Provider.of<FirebaseFirestore>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -52,7 +47,8 @@ class DetailAlatScreen extends ConsumerWidget {
                 // --- Gambar alat ---
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: data['gambar'] != null &&
+                  child:
+                      data['gambar'] != null &&
                           data['gambar'].toString().isNotEmpty
                       ? Image.network(
                           data['gambar'],
@@ -61,10 +57,10 @@ class DetailAlatScreen extends ConsumerWidget {
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(
-                            Icons.broken_image,
-                            size: 100,
-                            color: Colors.grey,
-                          ),
+                                Icons.broken_image,
+                                size: 100,
+                                color: Colors.grey,
+                              ),
                         )
                       : Container(
                           height: 200,
@@ -106,8 +102,9 @@ class DetailAlatScreen extends ConsumerWidget {
                           color: isTersedia ? Colors.white : Colors.black,
                         ),
                       ),
-                      backgroundColor:
-                          isTersedia ? Colors.green : Colors.grey[300],
+                      backgroundColor: isTersedia
+                          ? Colors.green
+                          : Colors.grey[300],
                     ),
                   ],
                 ),
@@ -150,7 +147,7 @@ class DetailAlatScreen extends ConsumerWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => FormPeminjamanScreen(
-                                  namaAlat: data['nama'],
+                                  namaAlat: data['nama'] ?? 'Tanpa nama',
                                   iconPath: '',
                                 ),
                               ),
@@ -158,8 +155,9 @@ class DetailAlatScreen extends ConsumerWidget {
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          isTersedia ? colorMaroon : Colors.grey[300],
+                      backgroundColor: isTersedia
+                          ? colorMaroon
+                          : Colors.grey[300],
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
