@@ -7,6 +7,8 @@ import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/auth/spl
 import 'package:provider/provider.dart';
 import 'Dependency_Injection/Injection_Container.dart' as di;
 import 'features/presentation/providers/auth_provider.dart';
+import 'features/presentation/providers/user_provider.dart';
+import 'features/presentation/providers/alat_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +17,11 @@ void main() async {
 
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<UserProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<AlatProvider>()),
+      ],
       child: const MyApp(),
     ),
   );

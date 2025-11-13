@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/user_provider.dart';
-import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/auth/login_screen.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
+// import 'package:pbase_peminjaman_alat_lab/constants/constants.dart';
+// import 'package:pbase_peminjaman_alat_lab/screens/auth/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -17,9 +17,6 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    final user = userProvider.user;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profil Pengguna"),
@@ -27,98 +24,90 @@ class ProfileScreen extends StatelessWidget {
         elevation: 1,
       ),
       backgroundColor: Colors.grey[50],
-      body: user == null
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            // --- KARTU PROFIL PENGGUNA ---
+            Container(
               padding: const EdgeInsets.all(24.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
               child: Column(
                 children: [
-                  // --- KARTU PROFIL PENGGUNA ---
+                  // Avatar
                   Container(
-                    padding: const EdgeInsets.all(24.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[200]!),
+                    width: 90,
+                    height: 90,
+                    decoration: const BoxDecoration(
+                      color: colorMaroon,
+                      shape: BoxShape.circle,
                     ),
-                    child: Column(
-                      children: [
-                        // Avatar
-                        Container(
-                          width: 90,
-                          height: 90,
-                          decoration: const BoxDecoration(
-                            color: colorMaroon,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Center(
-                            child: Text(
-                              "QD",
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                    child: const Center(
+                      child: Text(
+                        "QD",
+                        style: TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          user.name,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          user.email,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // --- MENU PENGATURAN ---
-                  _buildProfileMenu(
-                    context: context,
-                    icon: Icons.person_outline,
-                    text: "Edit Profil",
-                    onTap: () {
-                      // TODO: Navigasi ke halaman edit profil
-                    },
-                  ),
-                  _buildProfileMenu(
-                    context: context,
-                    icon: Icons.help_outline,
-                    text: "Pusat Bantuan",
-                    onTap: () {},
-                  ),
-
-                  // --- TOMBOL LOGOUT ---
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.logout, color: colorMaroon),
-                      label: const Text('Logout'),
-                      onPressed: () => _logout(context),
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: colorMaroon,
-                        backgroundColor: const Color(0xFFFFF0F0),
-                        elevation: 0,
-                        side: BorderSide(color: Colors.red[100]!),
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Qusnul Diah Mawanti",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "mahasiswa@polinema.ac.id",
+                    style: TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 24),
+
+            // --- MENU PENGATURAN ---
+            _buildProfileMenu(
+              context: context,
+              icon: Icons.person_outline,
+              text: "Edit Profil",
+              onTap: () {
+                // TODO: Navigasi ke halaman edit profil
+              },
+            ),
+            _buildProfileMenu(
+              context: context,
+              icon: Icons.help_outline,
+              text: "Pusat Bantuan",
+              onTap: () {},
+            ),
+
+            // --- TOMBOL LOGOUT ---
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.logout, color: colorMaroon),
+                label: const Text('Logout'),
+                onPressed: () => _logout(context),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: colorMaroon,
+                  backgroundColor: const Color(0xFFFFF0F0),
+                  elevation: 0,
+                  side: BorderSide(color: Colors.red[100]!),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

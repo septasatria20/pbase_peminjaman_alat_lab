@@ -190,8 +190,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildAlatGrid(List<dynamic> alatList) {
     final alatFiltered = alatList.where((alat) {
-      final kategori = (alat['kategori'] ?? '').toLowerCase();
-      final nama = (alat['nama'] ?? '').toLowerCase();
+      final kategori = alat.kategori.toLowerCase();
+      final nama = alat.nama.toLowerCase();
 
       final cocokKategori = _kategoriTerpilih == "semua"
           ? true
@@ -215,8 +215,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       itemCount: alatFiltered.length,
       itemBuilder: (context, index) {
-        final alat = alatFiltered.elementAt(index);
-        final bool isTersedia = (alat['status']?.toLowerCase() == 'tersedia');
+        final alat = alatFiltered[index];
+        final bool isTersedia = alat.status.toLowerCase() == 'tersedia';
 
         return InkWell(
           onTap: () {
@@ -247,26 +247,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
-                      _kategoriList[alat['kategori']] ?? Icons.widgets,
+                      _kategoriList[alat.kategori] ?? Icons.widgets,
                       size: 28,
                       color: isTersedia ? colorMaroon : Colors.grey[400],
                     ),
                   ),
                   const Spacer(),
-                  RichText(
-                    text: TextSpan(
-                      children: _highlightSearchText(
-                        alat['nama'] ?? 'Tanpa nama',
-                        _searchQuery,
-                        isTersedia ? Colors.black87 : Colors.grey[600]!,
-                      ),
-                    ),
+                  Text(
+                    alat.nama,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isTersedia ? Colors.black87 : Colors.grey[600]!,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Stok: ${alat['jumlah']}',
+                    'Stok: ${alat.jumlah}',
                     style: TextStyle(
                       fontSize: 13,
                       color: isTersedia ? Colors.black54 : Colors.red,
@@ -279,61 +276,5 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       },
     );
-  }
-
-  List<TextSpan> _highlightSearchText(
-    String text,
-    String query,
-    Color defaultColor,
-  ) {
-    if (query.isEmpty) {
-      return [
-        TextSpan(
-          text: text,
-          style: TextStyle(color: defaultColor),
-        ),
-      ];
-    }
-
-    final lowerText = text.toLowerCase();
-    final lowerQuery = query.toLowerCase();
-    final spans = <TextSpan>[];
-    int start = 0;
-
-    while (true) {
-      final index = lowerText.indexOf(lowerQuery, start);
-      if (index < 0) {
-        spans.add(
-          TextSpan(
-            text: text.substring(start),
-            style: TextStyle(color: defaultColor),
-          ),
-        );
-        break;
-      }
-
-      if (index > start) {
-        spans.add(
-          TextSpan(
-            text: text.substring(start, index),
-            style: TextStyle(color: defaultColor),
-          ),
-        );
-      }
-
-      spans.add(
-        TextSpan(
-          text: text.substring(index, index + query.length),
-          style: const TextStyle(
-            color: colorMaroon,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      );
-
-      start = index + query.length;
-    }
-
-    return spans;
   }
 }
