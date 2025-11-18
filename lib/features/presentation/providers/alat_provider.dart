@@ -14,15 +14,43 @@ class AlatProvider with ChangeNotifier {
   Alat? _alatDetail;
   Alat? get alatDetail => _alatDetail;
 
+  bool _isStreamActive = false;
+
   void fetchAlatStream() {
-    getAlatStream().listen((alatList) {
-      _alatList = alatList;
-      notifyListeners();
-    });
+    // Prevent multiple stream subscriptions
+    if (_isStreamActive) {
+      print('⚠️ Stream already active, skipping fetchAlatStream');
+      return;
+    }
+    
+    _isStreamActive = true;
+    print('🔵 Starting alat stream...');
+    
+    getAlatStream().listen(
+      (alatList) {
+        _alatList = alatList;
+        print('✅ Alat list updated: ${alatList.length} items');
+        notifyListeners();
+      },
+      onError: (error) {
+        print('❌ Error in alat stream: $error');
+        _isStreamActive = false;
+      },
+      onDone: () {
+        print('⚠️ Stream done');
+        _isStreamActive = false;
+      },
+    );
   }
 
   Future<void> fetchAlatDetail(String id) async {
     _alatDetail = await getAlatDetail(id);
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _isStreamActive = false;
+    super.dispose();
   }
 }

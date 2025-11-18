@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/alat_provider.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/auth_provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/ai/ai_helper_screen.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/auth/login_screen.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/detail_alat_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -24,16 +26,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
   };
 
   @override
-  Widget build(BuildContext context) {
-    final alatProvider = Provider.of<AlatProvider>(context);
-    alatProvider.fetchAlatStream();
+  void initState() {
+    super.initState();
+    // Fetch alat data only once when screen loads
+    Future.microtask(() {
+      final alatProvider = context.read<AlatProvider>();
+      alatProvider.fetchAlatStream();
+    });
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text("Inventaris Lab"),
         backgroundColor: Colors.white,
         elevation: 1,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Keluar',
+            onPressed: () => _showLogoutDialog(context),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -45,16 +61,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         foregroundColor: Colors.white,
         child: const Icon(Icons.assistant),
       ),
-      body: Consumer<AlatProvider>(
-        builder: (context, provider, child) {
-          final alatList = provider.alatList;
+      body: Consumer2<AuthProvider, AlatProvider>(
+        builder: (context, authProvider, alatProvider, child) {
+          final alatList = alatProvider.alatList;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildWelcomeCard(),
+                _buildWelcomeCard(authProvider),
                 const SizedBox(height: 24),
                 _buildSearchBar(),
                 const SizedBox(height: 24),
@@ -79,7 +95,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildWelcomeCard() {
+  void _showLogoutDialog(BuildContext context) {
+    final authProvider = context.read<AuthProvider>();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text('Konfirmasi Logout'),
+        content: const Text('Apakah Anda yakin ingin keluar?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await authProvider.signOut();
+              if (context.mounted) {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorMaroon,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Keluar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWelcomeCard(AuthProvider authProvider) {
+    final userName = authProvider.currentUser?.name ?? 'Loading...';
+    final userEmail = authProvider.currentUser?.email ?? 
+                      authProvider.firebaseUser?.email ?? '';
+
+    // Debug logs
+    print('=== Dashboard Welcome Card ===');
+    print('Current User Name: ${authProvider.currentUser?.name}');
+    print('Current User Email: ${authProvider.currentUser?.email}');
+    print('Firebase User Email: ${authProvider.firebaseUser?.email}');
+    print('=============================');
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -91,21 +155,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Selamat datang, Qusnul!",
-            style: TextStyle(
+            "Selamat datang, $userName!",
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
-            "Siap untuk meminjam alat hari ini?",
-            style: TextStyle(fontSize: 15, color: Colors.white70),
+            userEmail,
+            style: const TextStyle(fontSize: 14, color: Colors.white60),
           ),
         ],
       ),
@@ -189,6 +253,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildAlatGrid(List<dynamic> alatList) {
+    // Show loading if list is empty
+    if (alatList.isEmpty) {
+      return Center(
+        child: Column(
+          children: [
+            const SizedBox(height: 48),
+            CircularProgressIndicator(color: colorMaroon),
+            const SizedBox(height: 16),
+            Text(
+              'Memuat data alat...',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      );
+    }
+
     final alatFiltered = alatList.where((alat) {
       final kategori = alat.kategori.toLowerCase();
       final nama = alat.nama.toLowerCase();
@@ -203,6 +284,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       return cocokKategori && cocokCari;
     }).toList();
+
+    // Show message if filtered list is empty
+    if (alatFiltered.isEmpty) {
+      return Center(
+        child: Column(
+          children: [
+            const SizedBox(height: 48),
+            Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Tidak ada alat ditemukan',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return GridView.builder(
       physics: const NeverScrollableScrollPhysics(),

@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
-import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/auth/login_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../style/color.dart';
+import 'login_screen.dart';
+import '../main/dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({Key? key}) : super(key: key);
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -15,16 +17,33 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToHome();
+    _navigateToNextScreen();
   }
 
-  void _navigateToHome() async {
-    await Future.delayed(const Duration(milliseconds: 2000), () {});
+  Future<void> _navigateToNextScreen() async {
+    // Wait for minimum splash time
+    await Future.delayed(const Duration(seconds: 2));
+
     if (!mounted) return;
 
-    // Untuk sekarang, kita langsung ke LoginScreen
+    final authProvider = context.read<AuthProvider>();
+
+    // Wait for auth initialization
+    int attempts = 0;
+    while (!authProvider.isInitialized && attempts < 50) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      attempts++;
+    }
+
+    if (!mounted) return;
+
+    final isAuthenticated = authProvider.isAuthenticated;
+
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      MaterialPageRoute(
+        builder: (_) =>
+            isAuthenticated ? const DashboardScreen() : const LoginScreen(),
+      ),
     );
   }
 
@@ -36,45 +55,23 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  )
-                ],
-              ),
-              child: const Icon(
-                Icons.laptop_chromebook_outlined,
-                color: colorMaroon,
-                size: 48,
-              ),
+            const Icon(
+              Icons.science,
+              size: 100,
+              color: Colors.white,
             ),
             const SizedBox(height: 24),
-            Text(
-              "LabKom Pinjam",
-              style: GoogleFonts.inter(
+            const Text(
+              'Peminjaman Alat Lab',
+              style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              "Politeknik Negeri Malang",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 48),
             const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation(Colors.white),
+              color: Colors.white,
             ),
           ],
         ),
