@@ -4,8 +4,8 @@ class Alat {
   final String kategori;
   final int jumlah;
   final String status;
-  final String deskripsi;
-  final String gambar;
+  final String? deskripsi;
+  final String? lokasi;
 
   const Alat({
     required this.id,
@@ -13,7 +13,7 @@ class Alat {
     required this.kategori,
     required this.jumlah,
     required this.status,
-    required this.deskripsi,
-    required this.gambar,
+    this.deskripsi,
+    this.lokasi,
   });
 }

@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:pbase_peminjaman_alat_lab/features/domain/entities/user.dart';
-import 'package:pbase_peminjaman_alat_lab/features/domain/usecases/user_usecases.dart';
+import '../../domain/repositories/user_repository.dart';
+import '../../domain/entities/user.dart';
 
-class UserProvider with ChangeNotifier {
-  final GetUser getUser;
-  final UpdateUser updateUser;
+class UserProvider extends ChangeNotifier {
+  final UserRepository _userRepository;
+  
+  User? _currentUser;
+  bool _isLoading = false;
+  String? _errorMessage;
 
-  UserProvider({required this.getUser, required this.updateUser});
+  UserProvider(this._userRepository);
 
-  User? _user;
-  User? get user => _user;
+  User? get currentUser => _currentUser;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
 
-  Future<void> fetchUser(String userId) async {
-    _user = await getUser(userId);
-    notifyListeners();
-  }
-
-  Future<void> updateUserData(String userId, Map<String, dynamic> data) async {
-    await updateUser(userId, data);
-    await fetchUser(userId);
-  }
+  // Add methods as needed
 }

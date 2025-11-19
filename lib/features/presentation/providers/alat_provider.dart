@@ -1,51 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:pbase_peminjaman_alat_lab/features/domain/entities/alat.dart';
-import 'package:pbase_peminjaman_alat_lab/features/domain/usecases/alat_usecases.dart';
+import '../../domain/repositories/alat_repository.dart';
+import '../../domain/entities/alat.dart';
 
-class AlatProvider with ChangeNotifier {
-  final GetAlatStream getAlatStream;
-  final GetAlatDetail getAlatDetail;
-
-  AlatProvider({required this.getAlatStream, required this.getAlatDetail});
-
+class AlatProvider extends ChangeNotifier {
+  final AlatRepository _alatRepository;
+  
   List<Alat> _alatList = [];
-  List<Alat> get alatList => _alatList;
-
-  Alat? _alatDetail;
-  Alat? get alatDetail => _alatDetail;
-
+  bool _isLoading = false;
+  String? _errorMessage;
   bool _isStreamActive = false;
 
+  AlatProvider(this._alatRepository);
+
+  List<Alat> get alatList => _alatList;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+
   void fetchAlatStream() {
-    // Prevent multiple stream subscriptions
     if (_isStreamActive) {
-      print('⚠️ Stream already active, skipping fetchAlatStream');
+      print('⚠️ Alat stream already active, skipping');
       return;
     }
     
     _isStreamActive = true;
+    _isLoading = true;
     print('🔵 Starting alat stream...');
     
-    getAlatStream().listen(
+    _alatRepository.getAlatStream().listen(
       (alatList) {
         _alatList = alatList;
+        _isLoading = false;
         print('✅ Alat list updated: ${alatList.length} items');
         notifyListeners();
       },
       onError: (error) {
-        print('❌ Error in alat stream: $error');
+        _errorMessage = error.toString();
+        _isLoading = false;
         _isStreamActive = false;
+        print('❌ Error in alat stream: $error');
+        notifyListeners();
       },
       onDone: () {
-        print('⚠️ Stream done');
+        print('⚠️ Alat stream done');
         _isStreamActive = false;
       },
     );
-  }
-
-  Future<void> fetchAlatDetail(String id) async {
-    _alatDetail = await getAlatDetail(id);
-    notifyListeners();
   }
 
   @override

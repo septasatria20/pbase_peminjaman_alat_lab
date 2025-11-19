@@ -1,26 +1,36 @@
-import 'package:pbase_peminjaman_alat_lab/features/data/datasources/alat_datasource.dart';
-import 'package:pbase_peminjaman_alat_lab/features/data/models/alat_model.dart';
-import 'package:pbase_peminjaman_alat_lab/features/domain/entities/alat.dart';
-import 'package:pbase_peminjaman_alat_lab/features/domain/repositories/alat_repository.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../data/models/alat_model.dart';
+import '../../domain/entities/alat.dart';
+import '../../domain/repositories/alat_repository.dart';
 
 class AlatRepositoryImpl implements AlatRepository {
-  final AlatDataSource _dataSource;
+  final FirebaseFirestore _firestore;
 
-  AlatRepositoryImpl(this._dataSource);
+  AlatRepositoryImpl(this._firestore);
 
   @override
   Stream<List<Alat>> getAlatStream() {
-    return _dataSource.getAlatStream().map((list) {
-      return list.map((data) => AlatModel.fromJson(data['id'], data)).toList();
-    });
+    print('🔵 AlatRepository - Starting Firestore stream...');
+    return _firestore
+        .collection('alat')
+        .snapshots()
+        .map((snapshot) {
+          print('📦 Received ${snapshot.docs.length} documents from Firestore');
+          return snapshot.docs
+              .map((doc) => AlatModel.fromJson(doc.id, doc.data()))
+              .toList();
+        });
   }
 
   @override
   Future<Alat?> getAlatDetail(String id) async {
-    final data = await _dataSource.getAlatDetail(id);
-    if (data != null) {
-      return AlatModel.fromJson(id, data);
+    try {
+      final doc = await _firestore.collection('alat').doc(id).get();
+      if (!doc.exists) return null;
+      return AlatModel.fromJson(doc.id, doc.data()!);
+    } catch (e) {
+      print('❌ Error getting alat detail: $e');
+      return null;
     }
-    return null;
   }
 }

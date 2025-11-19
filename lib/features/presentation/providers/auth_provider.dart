@@ -27,15 +27,24 @@ class AuthProvider extends ChangeNotifier {
   bool get isInitialized => _isInitialized;
 
   void _initAuth() {
+    print('AuthProvider - Initializing auth listener...');
     _authRepository.authStateChanges().listen((user) async {
+      print('Auth state changed. User: ${user?.email ?? "null"}');
       _firebaseUser = user;
       
       if (user != null) {
+        print('Loading user data for: ${user.uid}');
         await _loadUserData(user.uid);
       } else {
+        print('No user logged in');
         _currentUser = null;
       }
       
+      _isInitialized = true;
+      print('Auth initialized. Authenticated: ${_firebaseUser != null}');
+      notifyListeners();
+    }, onError: (error) {
+      print('Auth state change error: $error');
       _isInitialized = true;
       notifyListeners();
     });
@@ -57,10 +66,10 @@ class AuthProvider extends ChangeNotifier {
         print('✅ User loaded successfully: ${_currentUser?.name}');
         notifyListeners(); // Force UI update
       } else {
-        print('❌ User document does not exist for $userId');
+        print('User document does not exist for $userId');
       }
     } catch (e) {
-      print('❌ Error loading user data: $e');
+      print('Error loading user data: $e');
     }
   }
 
@@ -75,7 +84,7 @@ class AuthProvider extends ChangeNotifier {
       _currentUser = user;
       _firebaseUser = _authRepository.getCurrentUser();
       
-      print('✅ Login successful');
+      print('Login successful');
       print('User ID: ${user.id}');
       print('User Name: ${user.name}');
       print('User Email: ${user.email}');
@@ -90,7 +99,7 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
-      print('❌ Login error: $e');
+      print('Login error: $e');
       notifyListeners();
       return false;
     }
@@ -102,7 +111,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      print('🟢 AuthProvider - Starting registration...');
+      print('AuthProvider - Starting registration...');
       print('   Email: $email');
       print('   Name: $name');
       
@@ -110,7 +119,7 @@ class AuthProvider extends ChangeNotifier {
       _currentUser = user;
       _firebaseUser = _authRepository.getCurrentUser();
       
-      print('✅ AuthProvider - Registration successful');
+      print('AuthProvider - Registration successful');
       print('   User ID: ${user.id}');
       print('   User Name: ${user.name}');
       print('   User Email: ${user.email}');
@@ -121,7 +130,7 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
-      print('❌ AuthProvider - Register error: $e');
+      print('AuthProvider - Register error: $e');
       notifyListeners();
       return false;
     }

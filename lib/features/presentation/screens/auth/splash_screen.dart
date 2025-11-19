@@ -108,33 +108,58 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 
   Future<void> _navigateToNextScreen() async {
-    await Future.delayed(const Duration(milliseconds: 3000));
-    
-    if (!mounted) return;
-    
-    final authProvider = context.read<AuthProvider>();
-    
-    int attempts = 0;
-    while (!authProvider.isInitialized && attempts < 50) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      attempts++;
+    try {
+      print('🔵 Starting navigation from splash screen...');
+      await Future.delayed(const Duration(milliseconds: 3000));
+      
+      if (!mounted) {
+        print('⚠️ Widget not mounted, aborting navigation');
+        return;
+      }
+      
+      final authProvider = context.read<AuthProvider>();
+      print('🔵 AuthProvider found: ${authProvider != null}');
+      
+      int attempts = 0;
+      while (!authProvider.isInitialized && attempts < 50) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        attempts++;
+        print('⏳ Waiting for auth initialization... attempt $attempts');
+      }
+      
+      if (!mounted) {
+        print('⚠️ Widget not mounted after waiting, aborting');
+        return;
+      }
+      
+      final isAuthenticated = authProvider.isAuthenticated;
+      print('✅ Auth initialized. Authenticated: $isAuthenticated');
+      print('🔵 Navigating to ${isAuthenticated ? "Dashboard" : "Login"}...');
+      
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return isAuthenticated ? const DashboardScreen() : const LoginScreen();
+          },
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 600),
+        ),
+      );
+      
+      print('✅ Navigation completed successfully');
+    } catch (e, stackTrace) {
+      print('❌ Error in splash navigation: $e');
+      print('Stack trace: $stackTrace');
+      
+      // Fallback to login screen on error
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
     }
-    
-    if (!mounted) return;
-    
-    final isAuthenticated = authProvider.isAuthenticated;
-    
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return isAuthenticated ? const DashboardScreen() : const LoginScreen();
-        },
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 600),
-      ),
-    );
   }
 
   @override
@@ -199,7 +224,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Text(
-                                'SIPELMA',
+                                'SIMPEL',
                                 style: TextStyle(
                                   fontSize: 36,
                                   fontWeight: FontWeight.bold,
@@ -210,7 +235,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Sistem Peminjaman Alat Laboratorium',
+                                'Sistem Peminjaman Alat Lab',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: Colors.grey[600],
@@ -220,7 +245,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Politeknik Negeri Malang',
+                                'POLINEMA',
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: Colors.grey[500],

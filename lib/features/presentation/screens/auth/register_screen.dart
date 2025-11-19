@@ -202,7 +202,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'SIPELMA',
+                          'SIMPEL',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -211,7 +211,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           ),
                         ),
                         Text(
-                          'Sistem Peminjaman Alat Lab Polinema',
+                          'Polinema',
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[600],
@@ -249,10 +249,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Daftar untuk mulai menggunakan SIPELMA',
+                                'Daftar untuk mulai menggunakan SIMPEL',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 15,
                                   color: Colors.grey[600],
                                   fontWeight: FontWeight.w400,
                                 ),

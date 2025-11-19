@@ -180,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'SIPELMA',
+                            'SIMPEL',
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,

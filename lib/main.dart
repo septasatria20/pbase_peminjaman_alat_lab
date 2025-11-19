@@ -21,9 +21,8 @@ void main() async {
       providers: [
         Provider<FirebaseFirestore>(create: (_) => FirebaseFirestore.instance),
         ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>()),
-        // TODO: Add other providers when ready
-        // ChangeNotifierProvider(create: (_) => di.sl<UserProvider>()),
-        // ChangeNotifierProvider(create: (_) => di.sl<AlatProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<UserProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<AlatProvider>()),
       ],
       child: const MyApp(),
     ),
