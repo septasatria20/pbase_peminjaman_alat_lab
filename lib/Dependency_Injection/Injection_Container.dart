@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -15,47 +16,72 @@ import '../features/presentation/providers/user_provider.dart';
 import '../features/domain/repositories/alat_repository.dart';
 import '../features/data/repositories/alat_repository_impl.dart';
 import '../features/presentation/providers/alat_provider.dart';
-import 'package:get_it/get_it.dart';
 
 final sl = GetIt.instance;
 
 void setupDependencyInjection() {
   print('🔵 Setting up Dependency Injection...');
 
-  // Firebase instances
+  // ===== Firebase Instances =====
   sl.registerLazySingleton<firebase_auth.FirebaseAuth>(
     () => firebase_auth.FirebaseAuth.instance,
   );
+  
   sl.registerLazySingleton<FirebaseFirestore>(
     () => FirebaseFirestore.instance,
   );
 
-  // ===== Auth =====
+  // ===== Repositories =====
+  
+  // Auth Repository
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(
-      sl<firebase_auth.FirebaseAuth>(),
-      sl<FirebaseFirestore>(),
-    ),
+    () {
+      print('  ✅ Registering AuthRepository');
+      return AuthRepositoryImpl(
+        sl<firebase_auth.FirebaseAuth>(),
+        sl<FirebaseFirestore>(),
+      );
+    },
   );
 
-  sl.registerFactory(() => AuthProvider(
-    sl<AuthRepository>(),
-    sl<FirebaseFirestore>(),
-  ));
-
-  // ===== User =====
+  // User Repository
   sl.registerLazySingleton<UserRepository>(
-    () => UserRepositoryImpl(sl<FirebaseFirestore>()),
+    () {
+      print('  ✅ Registering UserRepository');
+      return UserRepositoryImpl(sl<FirebaseFirestore>());
+    },
   );
 
-  sl.registerFactory(() => UserProvider(sl<UserRepository>()));
-
-  // ===== Alat =====
+  // Alat Repository
   sl.registerLazySingleton<AlatRepository>(
-    () => AlatRepositoryImpl(sl<FirebaseFirestore>()),
+    () {
+      print('  ✅ Registering AlatRepository');
+      return AlatRepositoryImpl(sl<FirebaseFirestore>());
+    },
   );
 
-  sl.registerFactory(() => AlatProvider(sl<AlatRepository>()));
+  // ===== Providers =====
+  
+  // Auth Provider
+  sl.registerFactory(() {
+    print('  ✅ Creating AuthProvider');
+    return AuthProvider(
+      sl<AuthRepository>(),
+      sl<FirebaseFirestore>(),
+    );
+  });
 
-  print('✅ Dependency Injection setup completed');
+  // User Provider
+  sl.registerFactory(() {
+    print('  ✅ Creating UserProvider');
+    return UserProvider(sl<UserRepository>());
+  });
+
+  // Alat Provider
+  sl.registerFactory(() {
+    print('  ✅ Creating AlatProvider');
+    return AlatProvider(sl<AlatRepository>());
+  });
+
+  print('✅ Dependency Injection setup completed\n');
 }

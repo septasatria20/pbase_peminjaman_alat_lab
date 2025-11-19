@@ -17,6 +17,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   String _searchQuery = "";
   String _kategoriTerpilih = "semua";
+  int _selectedIndex = 0;
 
   final Map<String, IconData> _kategoriList = {
     "komponen": Icons.memory,
@@ -35,12 +36,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text("Inventaris Lab"),
+        title: Text(_getAppBarTitle()),
         backgroundColor: Colors.white,
         elevation: 1,
         actions: [
@@ -51,7 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: _selectedIndex == 0 ? FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => const AiHelperScreen()),
@@ -60,41 +67,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: colorMaroon,
         foregroundColor: Colors.white,
         child: const Icon(Icons.assistant),
-      ),
-      body: Consumer2<AuthProvider, AlatProvider>(
-        builder: (context, authProvider, alatProvider, child) {
-          final alatList = alatProvider.alatList;
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildWelcomeCard(authProvider),
-                const SizedBox(height: 24),
-                _buildSearchBar(),
-                const SizedBox(height: 24),
-                const Text(
-                  "Kategori",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                _buildCategoryList(),
-                const SizedBox(height: 24),
-                const Text(
-                  "Daftar Alat",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                _buildAlatGrid(alatList),
-              ],
-            ),
-          );
-        },
+      ) : null,
+      body: _getSelectedContent(),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Beranda',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history_outlined),
+            activeIcon: Icon(Icons.history),
+            label: 'Riwayat',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profil',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: colorMaroon,
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
+        elevation: 8,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     );
   }
 
+  String _getAppBarTitle() {
+    switch (_selectedIndex) {
+      case 0:
+        return 'Inventaris Lab';
+      case 1:
+        return 'Riwayat Peminjaman';
+      case 2:
+        return 'Profil';
+      default:
+        return 'SIMPEL';
+    }
+  }
+
+  Widget _getSelectedContent() {
+    switch (_selectedIndex) {
+      case 0:
+        return _buildHomeContent();
+      case 1:
+        return _buildRiwayatContent();
+      case 2:
+        return _buildProfileContent();
+      default:
+        return _buildHomeContent();
+    }
+  }
+
+  @override
   void _showLogoutDialog(BuildContext context) {
     final authProvider = context.read<AuthProvider>();
     
@@ -423,6 +454,317 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: TextStyle(color: Colors.black87),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHomeContent() {
+    return Consumer2<AuthProvider, AlatProvider>(
+      builder: (context, authProvider, alatProvider, child) {
+        final alatList = alatProvider.alatList;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWelcomeCard(authProvider),
+              const SizedBox(height: 24),
+              _buildSearchBar(),
+              const SizedBox(height: 24),
+              const Text(
+                "Kategori",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              _buildCategoryList(),
+              const SizedBox(height: 24),
+              const Text(
+                "Daftar Alat",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              _buildAlatGrid(alatList),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProfileContent() {
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        final user = authProvider.currentUser;
+        final email = user?.email ?? authProvider.firebaseUser?.email ?? '';
+        final name = user?.name ?? 'User';
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              // Profile Avatar
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [colorMaroon, colorMaroonDark],
+                  ),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.person,
+                    size: 64,
+                    color: colorMaroon,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: colorMaroonDark,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                email,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 32),
+              
+              // Profile Menu
+              _buildProfileMenuItem(
+                icon: Icons.person_outline,
+                title: 'Edit Profil',
+                onTap: () {
+                  // TODO: Navigate to edit profile
+                },
+              ),
+              _buildProfileMenuItem(
+                icon: Icons.history,
+                title: 'Riwayat Peminjaman',
+                onTap: () {
+                  // TODO: Navigate to history
+                },
+              ),
+              _buildProfileMenuItem(
+                icon: Icons.settings_outlined,
+                title: 'Pengaturan',
+                onTap: () {
+                  // TODO: Navigate to settings
+                },
+              ),
+              _buildProfileMenuItem(
+                icon: Icons.help_outline,
+                title: 'Bantuan',
+                onTap: () {
+                  // TODO: Navigate to help
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildProfileMenuItem(
+                icon: Icons.logout,
+                title: 'Keluar',
+                textColor: Colors.red,
+                iconColor: Colors.red,
+                onTap: () => _showLogoutDialog(context),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRiwayatContent() {
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        // TODO: Fetch riwayat data from provider
+        final hasRiwayat = false; // Replace with actual data check
+
+        return hasRiwayat
+            ? _buildRiwayatList()
+            : _buildEmptyRiwayat();
+      },
+    );
+  }
+
+  Widget _buildEmptyRiwayat() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: colorMaroonLight.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.history,
+              size: 80,
+              color: colorMaroon.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Belum Ada Riwayat',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: colorMaroonDark,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Riwayat peminjaman akan muncul di sini',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRiwayatList() {
+    // TODO: Replace with actual data
+    final dummyRiwayat = [
+      {
+        'nama': 'Arduino Uno',
+        'tanggal': '2024-01-15',
+        'status': 'Dikembalikan',
+        'kategori': 'komponen',
+      },
+      {
+        'nama': 'Multimeter Digital',
+        'tanggal': '2024-01-10',
+        'status': 'Dipinjam',
+        'kategori': 'perangkat',
+      },
+    ];
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: dummyRiwayat.length,
+      itemBuilder: (context, index) {
+        final item = dummyRiwayat[index];
+        final isDikembalikan = item['status'] == 'Dikembalikan';
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(16),
+            leading: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDikembalikan 
+                    ? Colors.green.shade50 
+                    : colorMaroonLight.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                _kategoriList[item['kategori']] ?? Icons.widgets,
+                color: isDikembalikan ? Colors.green : colorMaroon,
+                size: 24,
+              ),
+            ),
+            title: Text(
+              item['nama'] as String,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  'Tanggal: ${item['tanggal']}',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDikembalikan 
+                        ? Colors.green.shade50 
+                        : Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    item['status'] as String,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDikembalikan ? Colors.green : Colors.orange,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            trailing: Icon(
+              Icons.chevron_right,
+              color: Colors.grey[400],
+            ),
+            onTap: () {
+              // TODO: Navigate to detail riwayat
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProfileMenuItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? textColor,
+    Color? iconColor,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: ListTile(
+        leading: Icon(icon, color: iconColor ?? colorMaroon),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: textColor ?? Colors.black87,
+          ),
+        ),
+        trailing: Icon(Icons.chevron_right, color: Colors.grey[400]),
+        onTap: onTap,
       ),
     );
   }
