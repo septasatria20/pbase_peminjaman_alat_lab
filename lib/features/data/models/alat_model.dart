@@ -7,16 +7,18 @@ class AlatModel extends Alat {
     required String kategori,
     required int jumlah,
     required String status,
+    required String ruang,
     String? deskripsi,
-    String? lokasi,
+    String? gambar,
   }) : super(
           id: id,
           nama: nama,
           kategori: kategori,
           jumlah: jumlah,
           status: status,
+          ruang: ruang,
           deskripsi: deskripsi,
-          lokasi: lokasi,
+          gambar: gambar,
         );
 
   factory AlatModel.fromJson(String id, Map<String, dynamic> json) {
@@ -26,8 +28,9 @@ class AlatModel extends Alat {
       kategori: json['kategori'] ?? '',
       jumlah: json['jumlah'] ?? 0,
       status: json['status'] ?? 'tersedia',
+      ruang: json['ruang'] ?? 'BA',
       deskripsi: json['deskripsi'],
-      lokasi: json['lokasi'],
+      gambar: json['gambar'],
     );
   }
 
@@ -37,8 +40,9 @@ class AlatModel extends Alat {
       'kategori': kategori,
       'jumlah': jumlah,
       'status': status,
-      'deskripsi': deskripsi,
-      'lokasi': lokasi,
+      'ruang': ruang,
+      if (deskripsi != null) 'deskripsi': deskripsi,
+      if (gambar != null) 'gambar': gambar,
     };
   }
 }

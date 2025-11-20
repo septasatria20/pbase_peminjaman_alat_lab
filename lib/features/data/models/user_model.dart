@@ -1,4 +1,4 @@
-import 'package:pbase_peminjaman_alat_lab/features/domain/entities/user.dart';
+import '../../domain/entities/user.dart';
 
 class UserModel extends User {
   const UserModel({
@@ -6,7 +6,14 @@ class UserModel extends User {
     required String name,
     required String email,
     required String role,
-  }) : super(id: id, name: name, email: email, role: role);
+    String? lab,
+  }) : super(
+          id: id,
+          name: name,
+          email: email,
+          role: role,
+          lab: lab,
+        );
 
   factory UserModel.fromJson(String id, Map<String, dynamic> json) {
     return UserModel(
@@ -14,6 +21,7 @@ class UserModel extends User {
       name: json['name'] ?? '',
       email: json['email'] ?? '',
       role: json['role'] ?? 'user',
+      lab: json['lab'], // nullable
     );
   }
 
@@ -23,6 +31,7 @@ class UserModel extends User {
       'name': name,
       'email': email,
       'role': role,
+      if (lab != null) 'lab': lab,
     };
   }
 }

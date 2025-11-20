@@ -4,6 +4,8 @@ import '../../providers/auth_provider.dart';
 import '../../style/color.dart';
 import 'register_screen.dart';
 import '../main/dashboard_screen.dart';
+import '../admin/admin_dashboard_screen.dart'; // Import Admin Dashboard
+import '../../../../core/utils/seed_admin.dart'; // Add this import
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -58,9 +60,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
       if (success && mounted) {
         await Future.delayed(const Duration(milliseconds: 500));
+        
         if (mounted) {
+          final isAdmin = authProvider.isAdmin;
+          
+          // Redirect based on role
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const DashboardScreen()),
+            MaterialPageRoute(
+              builder: (_) => isAdmin 
+                  ? const AdminDashboardScreen()  // Admin Dashboard
+                  : const DashboardScreen(),       // User Dashboard
+            ),
           );
         }
       } else if (mounted && authProvider.errorMessage != null) {
@@ -453,6 +463,31 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     ),
                                   ),
                                 ],
+                              ),
+
+                              // TEMPORARY: Seed Admin Button (Remove after testing)
+                              const SizedBox(height: 16),
+                              TextButton(
+                                onPressed: () async {
+                                  final seedAdmin = SeedAdmin();
+                                  await seedAdmin.createAdmins();
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Admin accounts created! Check console for credentials.'),
+                                        duration: Duration(seconds: 5),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Text(
+                                  'Setup Admin Accounts (Dev Only)',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
                               ),
                             ],
                           ),

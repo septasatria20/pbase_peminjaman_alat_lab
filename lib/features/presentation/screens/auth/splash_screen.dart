@@ -4,6 +4,7 @@ import '../../providers/auth_provider.dart';
 import '../../style/color.dart';
 import 'login_screen.dart';
 import '../main/dashboard_screen.dart';
+import '../admin/admin_dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -112,48 +113,52 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       print('🔵 Starting navigation from splash screen...');
       await Future.delayed(const Duration(milliseconds: 3000));
       
-      if (!mounted) {
-        print('⚠️ Widget not mounted, aborting navigation');
-        return;
-      }
+      if (!mounted) return;
       
       final authProvider = context.read<AuthProvider>();
-      print('🔵 AuthProvider found: ${authProvider != null}');
       
       int attempts = 0;
       while (!authProvider.isInitialized && attempts < 50) {
         await Future.delayed(const Duration(milliseconds: 100));
         attempts++;
-        print('⏳ Waiting for auth initialization... attempt $attempts');
       }
       
-      if (!mounted) {
-        print('⚠️ Widget not mounted after waiting, aborting');
-        return;
-      }
+      if (!mounted) return;
       
       final isAuthenticated = authProvider.isAuthenticated;
-      print('✅ Auth initialized. Authenticated: $isAuthenticated');
-      print('🔵 Navigating to ${isAuthenticated ? "Dashboard" : "Login"}...');
       
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) {
-            return isAuthenticated ? const DashboardScreen() : const LoginScreen();
-          },
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 600),
-        ),
-      );
-      
-      print('✅ Navigation completed successfully');
+      if (isAuthenticated) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        final isAdmin = authProvider.isAdmin;
+        
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) {
+              return isAdmin 
+                  ? const AdminDashboardScreen() 
+                  : const DashboardScreen();
+            },
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 600),
+          ),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 600),
+          ),
+        );
+      }
     } catch (e, stackTrace) {
       print('❌ Error in splash navigation: $e');
       print('Stack trace: $stackTrace');
       
-      // Fallback to login screen on error
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const LoginScreen()),
