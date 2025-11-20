@@ -3,6 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'form_peminjaman_screen.dart';
+import 'package:pbase_peminjaman_alat_lab/Dependency_Injection/Injection_Container.dart'
+    as di;
+import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/auth_provider.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/user_provider.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/alat_provider.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/history_provider.dart';
 
 class DetailAlatScreen extends StatelessWidget {
   final String alatId;
@@ -146,9 +152,28 @@ class DetailAlatScreen extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => FormPeminjamanScreen(
-                                  namaAlat: data['nama'] ?? 'Tanpa nama',
-                                  iconPath: '',
+                                builder: (context) => MultiProvider(
+                                  providers: [
+                                    Provider<FirebaseFirestore>(
+                                      create: (_) => FirebaseFirestore.instance,
+                                    ),
+                                    ChangeNotifierProvider(
+                                      create: (_) => di.sl<AuthProvider>(),
+                                    ),
+                                    ChangeNotifierProvider(
+                                      create: (_) => di.sl<UserProvider>(),
+                                    ),
+                                    ChangeNotifierProvider(
+                                      create: (_) => di.sl<AlatProvider>(),
+                                    ),
+                                    ChangeNotifierProvider(
+                                      create: (_) => di.sl<HistoryProvider>(),
+                                    ),
+                                  ],
+                                  child: FormPeminjamanScreen(
+                                    namaAlat: data['nama'] ?? 'Tanpa nama',
+                                    iconPath: '',
+                                  ),
                                 ),
                               ),
                             );

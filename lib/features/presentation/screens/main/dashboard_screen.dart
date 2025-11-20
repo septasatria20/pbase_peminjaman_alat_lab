@@ -6,6 +6,7 @@ import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/ai/ai_helper_screen.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/auth/login_screen.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/detail_alat_screen.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/history_provider.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -33,6 +34,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Future.microtask(() {
       final alatProvider = context.read<AlatProvider>();
       alatProvider.fetchAlatStream();
+
+      final historyProvider = context.read<HistoryProvider>();
+      final userId = context.read<AuthProvider>().firebaseUser?.uid;
+
+      if (userId != null) {
+        print(
+          '🔍 [DashboardScreen] Fetching history for user ID: $userId',
+        ); // Debug log
+        historyProvider.fetchUserHistory(userId);
+      } else {
+        print('❌ [DashboardScreen] Error: User ID is null');
+      }
     });
   }
 
@@ -58,16 +71,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      floatingActionButton: _selectedIndex == 0 ? FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const AiHelperScreen()),
-          );
-        },
-        backgroundColor: colorMaroon,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.assistant),
-      ) : null,
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AiHelperScreen(),
+                  ),
+                );
+              },
+              backgroundColor: colorMaroon,
+              foregroundColor: Colors.white,
+              child: const Icon(Icons.assistant),
+            )
+          : null,
       body: _getSelectedContent(),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -128,13 +145,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void _showLogoutDialog(BuildContext context) {
     final authProvider = context.read<AuthProvider>();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Konfirmasi Logout'),
         content: const Text('Apakah Anda yakin ingin keluar?'),
         actions: [
@@ -165,8 +180,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildWelcomeCard(AuthProvider authProvider) {
     final userName = authProvider.currentUser?.name ?? 'Loading...';
-    final userEmail = authProvider.currentUser?.email ?? 
-                      authProvider.firebaseUser?.email ?? '';
+    final userEmail =
+        authProvider.currentUser?.email ??
+        authProvider.firebaseUser?.email ??
+        '';
 
     // Debug logs
     print('=== Dashboard Welcome Card ===');
@@ -326,10 +343,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 16),
             Text(
               'Tidak ada alat ditemukan',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -519,11 +533,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.person,
-                    size: 64,
-                    color: colorMaroon,
-                  ),
+                  child: Icon(Icons.person, size: 64, color: colorMaroon),
                 ),
               ),
               const SizedBox(height: 24),
@@ -538,13 +548,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 8),
               Text(
                 email,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
               const SizedBox(height: 32),
-              
+
               // Profile Menu
               _buildProfileMenuItem(
                 icon: Icons.person_outline,
@@ -590,16 +597,107 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildRiwayatContent() {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, child) {
-        // TODO: Fetch riwayat data from provider
-        final hasRiwayat = false; // Replace with actual data check
+    return Consumer<HistoryProvider>(
+      builder: (context, historyProvider, child) {
+        final historyList = historyProvider.state;
 
-        return hasRiwayat
-            ? _buildRiwayatList()
-            : _buildEmptyRiwayat();
+        print('🔍 [DashboardScreen] History list: $historyList'); // Debug log
+
+        if (historyList.isEmpty) {
+          print('ℹ️ [DashboardScreen] No history data available'); // Debug log
+          return _buildEmptyRiwayat();
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: historyList.length,
+          itemBuilder: (context, index) {
+            final item = historyList[index];
+            print(
+              '🔍 [DashboardScreen] Building history card for index $index',
+            ); // Debug log
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.all(16),
+                leading: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(item.status).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.inventory_2, size: 24),
+                ),
+                title: Text(
+                  item.namaAlat,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 4),
+                    Text(
+                      'Tanggal Pinjam: ${item.tanggalPinjam}',
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Tanggal Kembali: ${item.tanggalKembali}',
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(item.status).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        item.status,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _getStatusColor(item.status),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                onTap: () {
+                  // TODO: Navigate to detailed history screen if needed
+                },
+              ),
+            );
+          },
+        );
       },
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Disetujui':
+        return Colors.green[700]!;
+      case 'Diajukan':
+        return Colors.orange[700]!;
+      case 'Ditolak':
+        return Colors.red[700]!;
+      default:
+        return Colors.grey[600]!;
+    }
   }
 
   Widget _buildEmptyRiwayat() {
@@ -632,111 +730,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Text(
             'Riwayat peminjaman akan muncul di sini',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildRiwayatList() {
-    // TODO: Replace with actual data
-    final dummyRiwayat = [
-      {
-        'nama': 'Arduino Uno',
-        'tanggal': '2024-01-15',
-        'status': 'Dikembalikan',
-        'kategori': 'komponen',
-      },
-      {
-        'nama': 'Multimeter Digital',
-        'tanggal': '2024-01-10',
-        'status': 'Dipinjam',
-        'kategori': 'perangkat',
-      },
-    ];
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: dummyRiwayat.length,
-      itemBuilder: (context, index) {
-        final item = dummyRiwayat[index];
-        final isDikembalikan = item['status'] == 'Dikembalikan';
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[200]!),
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(16),
-            leading: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDikembalikan 
-                    ? Colors.green.shade50 
-                    : colorMaroonLight.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                _kategoriList[item['kategori']] ?? Icons.widgets,
-                color: isDikembalikan ? Colors.green : colorMaroon,
-                size: 24,
-              ),
-            ),
-            title: Text(
-              item['nama'] as String,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                Text(
-                  'Tanggal: ${item['tanggal']}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isDikembalikan 
-                        ? Colors.green.shade50 
-                        : Colors.orange.shade50,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    item['status'] as String,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isDikembalikan ? Colors.green : Colors.orange,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            trailing: Icon(
-              Icons.chevron_right,
-              color: Colors.grey[400],
-            ),
-            onTap: () {
-              // TODO: Navigate to detail riwayat
-            },
-          ),
-        );
-      },
     );
   }
 

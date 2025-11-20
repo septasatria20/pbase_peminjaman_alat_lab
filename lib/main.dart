@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/history_provider.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,6 +24,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<UserProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<AlatProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<HistoryProvider>()),
       ],
       child: const MyApp(),
     ),
