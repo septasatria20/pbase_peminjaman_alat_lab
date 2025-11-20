@@ -20,6 +20,7 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
   final _namaController = TextEditingController();
   final _jumlahController = TextEditingController();
   final _deskripsiController = TextEditingController();
+  final _gambarController = TextEditingController(); // ADD THIS
   
   String _kategoriTerpilih = 'komponen';
   String _statusTerpilih = 'tersedia';
@@ -46,8 +47,9 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
       _namaController.text = widget.alat!.nama;
       _jumlahController.text = widget.alat!.jumlah.toString();
       _deskripsiController.text = widget.alat!.deskripsi ?? '';
-      _kategoriTerpilih = widget.alat!.kategori;
-      _statusTerpilih = widget.alat!.status;
+      _gambarController.text = widget.alat!.gambar ?? ''; // ADD THIS
+      _kategoriTerpilih = widget.alat!.kategori.toLowerCase(); // ADD .toLowerCase()
+      _statusTerpilih = widget.alat!.status.toLowerCase(); // ADD .toLowerCase()
     }
   }
 
@@ -56,6 +58,7 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
     _namaController.dispose();
     _jumlahController.dispose();
     _deskripsiController.dispose();
+    _gambarController.dispose(); // ADD THIS
     super.dispose();
   }
 
@@ -78,6 +81,9 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
         'status': _statusTerpilih,
         'ruang': adminLab,
         'deskripsi': _deskripsiController.text.trim(),
+        'gambar': _gambarController.text.trim().isEmpty 
+            ? null 
+            : _gambarController.text.trim(), // ADD THIS
       };
 
       if (isEditMode) {
@@ -306,8 +312,8 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                       ),
                       items: _statusList.map((status) {
                         return DropdownMenuItem(
-                          value: status,
-                          child: Text(status[0].toUpperCase() + status.substring(1)),
+                          value: status, // CHANGE: Remove capitalize, keep lowercase
+                          child: Text(status[0].toUpperCase() + status.substring(1)), // Display capitalize
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -315,6 +321,103 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                       },
                     ),
                     const SizedBox(height: 20),
+
+                    // Gambar URL (NEW)
+                    const Text(
+                      'Link Gambar (Google Drive)',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _gambarController,
+                      keyboardType: TextInputType.url,
+                      decoration: InputDecoration(
+                        hintText: 'https://drive.google.com/uc?id=...',
+                        prefixIcon: const Icon(Icons.image_outlined, color: colorMaroon),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[200]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: colorMaroon, width: 2),
+                        ),
+                        helperText: 'Format: https://drive.google.com/uc?id=FILE_ID',
+                        helperStyle: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                      ),
+                      validator: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          if (!value.startsWith('http')) {
+                            return 'URL harus dimulai dengan http:// atau https://';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Preview Gambar (if URL exists)
+                    if (_gambarController.text.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Preview Gambar',
+                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            height: 150,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                _gambarController.text,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.broken_image, size: 48, color: Colors.grey[400]),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Gagal memuat gambar',
+                                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded /
+                                              loadingProgress.expectedTotalBytes!
+                                          : null,
+                                      color: colorMaroon,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
 
                     // Deskripsi
                     const Text(

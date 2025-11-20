@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/alat_provider.dart';
 import '../../style/color.dart';
 import '../auth/login_screen.dart';
 import '../../../../core/constants/lab_constants.dart';
+import 'add_edit_alat_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({Key? key}) : super(key: key);
@@ -56,11 +58,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
       floatingActionButton: _selectedIndex == 1
           ? FloatingActionButton.extended(
-              onPressed: () {
-                // TODO: Navigate to Add Alat Screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fitur Tambah Alat coming soon...')),
+              onPressed: () async {
+                final result = await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const AddEditAlatScreen(),
+                  ),
                 );
+                
+                // Refresh list if alat was added
+                if (result == true && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Data berhasil disimpan'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
               },
               backgroundColor: colorMaroon,
               foregroundColor: Colors.white,
@@ -102,7 +115,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         elevation: 8,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11), // ADD fontSize
+        unselectedLabelStyle: const TextStyle(fontSize: 11), // ADD THIS LINE
+        selectedFontSize: 11, // ADD THIS LINE
+        unselectedFontSize: 11, // ADD THIS LINE
       ),
     );
   }
@@ -301,7 +317,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildQuickAction(
-                      title: 'Validasi Peminjaman',
+                      title: 'Validasi',
                       icon: Icons.approval,
                       color: Colors.blue,
                       onTap: () {
@@ -374,25 +390,29 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        height: 100, // Fixed height untuk konsistensi
-        padding: const EdgeInsets.all(16),
+        height: 56, // FIXED HEIGHT untuk konsistensi
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: color.withOpacity(0.3)),
         ),
-        child: Column(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: color,
+            Icon(icon, color: color, size: 22),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
               ),
             ),
           ],
@@ -513,10 +533,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ),
                   ],
                   onSelected: (value) {
-                    // TODO: Handle edit/delete
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Fitur $value coming soon...')),
-                    );
+                    if (value == 'edit') {
+                      _handleEdit(alat);
+                    } else if (value == 'delete') {
+                      _handleDelete(alat);
+                    }
                   },
                 ),
               ),
@@ -525,6 +546,77 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         );
       },
     );
+  }
+
+  // Handle Edit
+  Future<void> _handleEdit(dynamic alat) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AddEditAlatScreen(alat: alat),
+      ),
+    );
+    
+    if (result == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Alat berhasil diupdate'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  // Handle Delete
+  Future<void> _handleDelete(dynamic alat) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Konfirmasi Hapus'),
+        content: Text('Apakah Anda yakin ingin menghapus "${alat.nama}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('alat')
+            .doc(alat.id)
+            .delete();
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Alat berhasil dihapus'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('❌ Error: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   // TAB 3: PEMINJAMAN

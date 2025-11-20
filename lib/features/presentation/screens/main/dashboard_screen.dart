@@ -94,7 +94,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         elevation: 8,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+        unselectedLabelStyle: const TextStyle(fontSize: 12),
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
       ),
     );
   }
@@ -125,7 +128,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  @override
   void _showLogoutDialog(BuildContext context) {
     final authProvider = context.read<AuthProvider>();
     

@@ -110,7 +110,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   Future<void> _navigateToNextScreen() async {
     try {
-      print('🔵 Starting navigation from splash screen...');
+      print('Starting navigation from splash screen...');
       await Future.delayed(const Duration(milliseconds: 3000));
       
       if (!mounted) return;

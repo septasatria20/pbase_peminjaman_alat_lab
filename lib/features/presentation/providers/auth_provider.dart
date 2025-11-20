@@ -68,7 +68,7 @@ class AuthProvider extends ChangeNotifier {
           role: data['role'] ?? 'user',
           lab: data['lab'], // ADD THIS LINE
         );
-        print('✅ User loaded successfully: ${_currentUser?.name}');
+        print('User loaded successfully: ${_currentUser?.name}');
         print('   Role: ${_currentUser?.role}');
         print('   Lab: ${_currentUser?.lab ?? "N/A"}'); // ADD THIS LINE
         notifyListeners();

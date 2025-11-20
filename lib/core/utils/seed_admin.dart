@@ -39,7 +39,7 @@ class SeedAdmin {
       },
     ];
 
-    print('🔵 Starting admin creation...\n');
+    print('Starting admin creation...\n');
 
     for (var admin in admins) {
       try {
@@ -61,12 +61,12 @@ class SeedAdmin {
           'createdAt': FieldValue.serverTimestamp(),
         });
 
-        print('✅ Admin created: ${admin['email']} (${admin['lab']})\n');
+        print('Admin created: ${admin['email']} (${admin['lab']})\n');
       } catch (e) {
         if (e.toString().contains('email-already-in-use')) {
-          print('⚠️  Admin already exists: ${admin['email']}\n');
+          print('Admin already exists: ${admin['email']}\n');
         } else {
-          print('❌ Error creating admin ${admin['email']}: $e\n');
+          print('Error creating admin ${admin['email']}: $e\n');
         }
       }
     }
@@ -81,5 +81,28 @@ class SeedAdmin {
       print('${admin['lab']?.toString().padRight(8)}: ${admin['email']}');
     }
     print('───────────────────────────────────────\n');
+  }
+
+  Future<void> deleteAllAdmins() async {
+    final admins = [
+      'admin.ba@lab.polinema.ac.id',
+      'admin.is@lab.polinema.ac.id',
+      'admin.se@lab.polinema.ac.id',
+      'admin.studio@lab.polinema.ac.id',
+      'admin.ncs@lab.polinema.ac.id',
+      'septa@admin.com', // OLD EMAIL
+    ];
+
+    print('🔴 Deleting old admin accounts...\n');
+
+    for (var email in admins) {
+      try {
+        // Get user by email (requires Firebase Admin SDK)
+        // For now, manual deletion via console is recommended
+        print('⚠️  Please manually delete: $email from Firebase Console');
+      } catch (e) {
+        print('Error: $e');
+      }
+    }
   }
 }

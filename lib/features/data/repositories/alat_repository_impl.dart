@@ -10,12 +10,12 @@ class AlatRepositoryImpl implements AlatRepository {
 
   @override
   Stream<List<Alat>> getAlatStream() {
-    print('🔵 AlatRepository - Starting Firestore stream...');
+    print('AlatRepository - Starting Firestore stream...');
     return _firestore
         .collection('alat')
         .snapshots()
         .map((snapshot) {
-          print('📦 Received ${snapshot.docs.length} documents from Firestore');
+          print('Received ${snapshot.docs.length} documents from Firestore');
           return snapshot.docs
               .map((doc) => AlatModel.fromJson(doc.id, doc.data()))
               .toList();
@@ -29,7 +29,7 @@ class AlatRepositoryImpl implements AlatRepository {
       if (!doc.exists) return null;
       return AlatModel.fromJson(doc.id, doc.data()!);
     } catch (e) {
-      print('❌ Error getting alat detail: $e');
+      print('Error getting alat detail: $e');
       return null;
     }
   }

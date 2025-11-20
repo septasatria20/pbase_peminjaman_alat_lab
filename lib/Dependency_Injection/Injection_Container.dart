@@ -20,7 +20,7 @@ import '../features/presentation/providers/alat_provider.dart';
 final sl = GetIt.instance;
 
 void setupDependencyInjection() {
-  print('🔵 Setting up Dependency Injection...');
+  print('Setting up Dependency Injection...');
 
   // ===== Firebase Instances =====
   sl.registerLazySingleton<firebase_auth.FirebaseAuth>(
@@ -36,7 +36,7 @@ void setupDependencyInjection() {
   // Auth Repository
   sl.registerLazySingleton<AuthRepository>(
     () {
-      print('  ✅ Registering AuthRepository');
+      print('Registering AuthRepository');
       return AuthRepositoryImpl(
         sl<firebase_auth.FirebaseAuth>(),
         sl<FirebaseFirestore>(),
@@ -47,7 +47,7 @@ void setupDependencyInjection() {
   // User Repository
   sl.registerLazySingleton<UserRepository>(
     () {
-      print('  ✅ Registering UserRepository');
+      print('Registering UserRepository');
       return UserRepositoryImpl(sl<FirebaseFirestore>());
     },
   );
@@ -55,7 +55,7 @@ void setupDependencyInjection() {
   // Alat Repository
   sl.registerLazySingleton<AlatRepository>(
     () {
-      print('  ✅ Registering AlatRepository');
+      print('Registering AlatRepository');
       return AlatRepositoryImpl(sl<FirebaseFirestore>());
     },
   );
@@ -64,7 +64,7 @@ void setupDependencyInjection() {
   
   // Auth Provider
   sl.registerFactory(() {
-    print('  ✅ Creating AuthProvider');
+    print('Creating AuthProvider');
     return AuthProvider(
       sl<AuthRepository>(),
       sl<FirebaseFirestore>(),
@@ -73,15 +73,15 @@ void setupDependencyInjection() {
 
   // User Provider
   sl.registerFactory(() {
-    print('  ✅ Creating UserProvider');
+    print('Creating UserProvider');
     return UserProvider(sl<UserRepository>());
   });
 
   // Alat Provider
   sl.registerFactory(() {
-    print('  ✅ Creating AlatProvider');
+    print('Creating AlatProvider');
     return AlatProvider(sl<AlatRepository>());
   });
 
-  print('✅ Dependency Injection setup completed\n');
+  print('Dependency Injection setup completed\n');
 }
