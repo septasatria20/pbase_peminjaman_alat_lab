@@ -28,7 +28,7 @@ class AlatModel extends Alat {
       kategori: json['kategori'] ?? '',
       jumlah: json['jumlah'] ?? 0,
       status: json['status'] ?? 'tersedia',
-      ruang: json['ruang'] ?? 'BA',
+      ruang: json['ruang'] ?? '',
       deskripsi: json['deskripsi'],
       gambar: json['gambar'],
     );

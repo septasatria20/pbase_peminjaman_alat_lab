@@ -14,9 +14,38 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
+final Map<String, Map<String, dynamic>> ruangStyle = {
+  "BA": {
+    "color": Color(0xFFE0F2FE),
+    "text": Color(0xFF0C4A6E),
+    "icon": Icons.business_center,
+  },
+  "IS": {
+    "color": Color(0xFFE5E7EB),
+    "text": Color(0xFF374151),
+    "icon": Icons.computer,
+  },
+  "NCS": {
+    "color": Color(0xFFFFEDD5),
+    "text": Color(0xFF9A3412),
+    "icon": Icons.shield,
+  },
+  "SE": {
+    "color": Color(0xFFEDE9FE),
+    "text": Color(0xFF5B21B6),
+    "icon": Icons.code,
+  },
+  "STUDIO": {
+    "color": Color(0xFFFCE7F3),
+    "text": Color(0xFF9D174D),
+    "icon": Icons.video_camera_back,
+  },
+};
+
 class _DashboardScreenState extends State<DashboardScreen> {
   String _searchQuery = "";
   String _kategoriTerpilih = "semua";
+  String _ruangTerpilih = "semua";
   int _selectedIndex = 0;
 
   final Map<String, IconData> _kategoriList = {
@@ -25,6 +54,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     "kabel": Icons.cable,
     "lainnya": Icons.more_horiz,
   };
+
+  final List<String> _ruangList = ["semua", "BA", "IS", "NCS", "SE", "STUDIO"];
 
   @override
   void initState() {
@@ -58,16 +89,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      floatingActionButton: _selectedIndex == 0 ? FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const AiHelperScreen()),
-          );
-        },
-        backgroundColor: colorMaroon,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.assistant),
-      ) : null,
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AiHelperScreen(),
+                  ),
+                );
+              },
+              backgroundColor: colorMaroon,
+              foregroundColor: Colors.white,
+              child: const Icon(Icons.assistant),
+            ) : null,
       body: _getSelectedContent(),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -94,7 +128,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         elevation: 8,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
         unselectedLabelStyle: const TextStyle(fontSize: 12),
         selectedFontSize: 12,
         unselectedFontSize: 12,
@@ -130,13 +167,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _showLogoutDialog(BuildContext context) {
     final authProvider = context.read<AuthProvider>();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+          borderRadius: BorderRadius.circular(16)
+          ),
         title: const Text('Konfirmasi Logout'),
         content: const Text('Apakah Anda yakin ingin keluar?'),
         actions: [
@@ -167,8 +204,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildWelcomeCard(AuthProvider authProvider) {
     final userName = authProvider.currentUser?.name ?? 'Loading...';
-    final userEmail = authProvider.currentUser?.email ?? 
-                      authProvider.firebaseUser?.email ?? '';
+    final userEmail =
+        authProvider.currentUser?.email ??
+        authProvider.firebaseUser?.email ??
+        '';
 
     // Debug logs
     print('=== Dashboard Welcome Card ===');
@@ -252,6 +291,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildRuangList() {
+    return SizedBox(
+      height: 60,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _ruangList.length,
+        itemBuilder: (context, index) {
+          final ruang = _ruangList[index];
+          final isActive = _ruangTerpilih == ruang;
+
+          return InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () => setState(() => _ruangTerpilih = ruang),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              decoration: BoxDecoration(
+                color: isActive ? colorMaroon : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: isActive ? null : Border.all(color: Colors.grey[300]!),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: colorMaroon.withOpacity(0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 3,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
+              child: Center(
+                child: Text(
+                  ruang.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isActive ? Colors.white : Colors.black87,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildKategoriCard(String key, IconData icon, String nama) {
     bool isActive = (_kategoriTerpilih == key);
 
@@ -285,6 +379,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget ruangChip(String kode) {
+    final style =
+        ruangStyle[kode] ??
+        {
+          "color": Colors.grey[300],
+          "text": Colors.black,
+          "icon": Icons.location_on,
+        };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: style["color"],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(style["icon"], size: 16, color: style["text"]),
+          const SizedBox(width: 6),
+          Text(
+            kode.toUpperCase(),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: style["text"],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAlatGrid(List<dynamic> alatList) {
     // Show loading if list is empty
     if (alatList.isEmpty) {
@@ -311,11 +438,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ? true
           : kategori == _kategoriTerpilih.toLowerCase();
 
+      final cocokRuang = _ruangTerpilih == "semua"
+          ? true
+          : alat.ruang.toLowerCase() == _ruangTerpilih.toLowerCase();
+
       final cocokCari = _searchQuery.isEmpty
           ? true
           : nama.contains(_searchQuery);
 
-      return cocokKategori && cocokCari;
+      return cocokKategori && cocokCari && cocokRuang;
     }).toList();
 
     // Show message if filtered list is empty
@@ -329,9 +460,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Text(
               'Tidak ada alat ditemukan',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16, 
                 color: Colors.grey[600],
-              ),
+                ),
             ),
           ],
         ),
@@ -381,7 +512,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
-                      _kategoriList[alat.kategori] ?? Icons.widgets,
+                      _kategoriList[alat.kategori.toLowerCase()] ??
+                          Icons.widgets,
                       size: 28,
                       color: isTersedia ? colorMaroon : Colors.grey[400],
                     ),
@@ -397,6 +529,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: isTersedia ? Colors.black54 : Colors.red,
                     ),
                   ),
+                  const SizedBox(height: 6),
+                  ruangChip(alat.ruang),
                 ],
               ),
             ),
@@ -482,6 +616,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildCategoryList(),
               const SizedBox(height: 24),
               const Text(
+                "Laboratorium",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              _buildRuangList(),
+              const SizedBox(height: 24),
+              const Text(
                 "Daftar Alat",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
@@ -522,10 +663,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.person,
-                    size: 64,
+                    Icons.person, 
+                    size: 64, 
                     color: colorMaroon,
-                  ),
+                    ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -541,12 +682,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Text(
                 email,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14, 
                   color: Colors.grey[600],
-                ),
+                  ),
               ),
               const SizedBox(height: 32),
-              
+
               // Profile Menu
               _buildProfileMenuItem(
                 icon: Icons.person_outline,
@@ -597,9 +738,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         // TODO: Fetch riwayat data from provider
         final hasRiwayat = false; // Replace with actual data check
 
-        return hasRiwayat
-            ? _buildRiwayatList()
-            : _buildEmptyRiwayat();
+        return hasRiwayat 
+        ? _buildRiwayatList() 
+        : _buildEmptyRiwayat();
       },
     );
   }
@@ -635,7 +776,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             'Riwayat peminjaman akan muncul di sini',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14, 
               color: Colors.grey[600],
             ),
           ),
@@ -680,8 +821,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             leading: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDikembalikan 
-                    ? Colors.green.shade50 
+                color: isDikembalikan
+                    ? Colors.green.shade50
                     : colorMaroonLight.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -694,9 +835,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             title: Text(
               item['nama'] as String,
               style: const TextStyle(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w600, 
                 fontSize: 16,
-              ),
+                ),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -705,16 +846,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Text(
                   'Tanggal: ${item['tanggal']}',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13, 
                     color: Colors.grey[600],
-                  ),
+                    ),
                 ),
                 const SizedBox(height: 4),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isDikembalikan 
-                        ? Colors.green.shade50 
+                    color: isDikembalikan
+                        ? Colors.green.shade50
                         : Colors.orange.shade50,
                     borderRadius: BorderRadius.circular(6),
                   ),
@@ -730,9 +871,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             trailing: Icon(
-              Icons.chevron_right,
+              Icons.chevron_right, 
               color: Colors.grey[400],
-            ),
+              ),
             onTap: () {
               // TODO: Navigate to detail riwayat
             },
