@@ -204,8 +204,7 @@ class HistoryScreen extends StatelessWidget {
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: colorMaroon,
-                                  foregroundColor:
-                                      Colors.white,
+                                  foregroundColor: Colors.white,
                                 ),
                                 child: const Text("Ya, Ajukan"),
                                 onPressed: () {

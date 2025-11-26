@@ -1,23 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/history_provider.dart';
 import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/auth/splash_screen.dart';
+import 'package:provider/provider.dart';
+import 'Dependency_Injection/Injection_Container.dart' as di;
+import 'features/presentation/providers/auth_provider.dart';
+import 'features/presentation/providers/user_provider.dart';
+import 'features/presentation/providers/alat_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  di.setupDependencyInjection();
 
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<FirebaseFirestore>(create: (_) => FirebaseFirestore.instance),
+        ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<UserProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<AlatProvider>()),
+          ChangeNotifierProvider(create: (_) => di.sl<HistoryProvider>()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Peminjaman Lab',
       theme: ThemeData(

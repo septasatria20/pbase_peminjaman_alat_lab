@@ -1,31 +1,50 @@
-class Alat {
-  final String id;
-  final String nama;
-  final String kategori;
-  final int jumlah;
-  final String status;
-  final String deskripsi;
-  final String gambar;
 
-  Alat({
-    required this.id,
-    required this.nama,
-    required this.kategori,
-    required this.jumlah,
-    required this.status,
-    required this.deskripsi,
-    required this.gambar,
-  });
+import '../../domain/entities/alat.dart';
 
-  factory Alat.fromFirestore(String id, Map<String, dynamic> data) {
-    return Alat(
+class AlatModel extends Alat {
+  const AlatModel({
+    required String id,
+    required String nama,
+    required String kategori,
+    required int jumlah,
+    required String status,
+    required String ruang,
+    String? deskripsi,
+    String? gambar,
+  }) : super(
+          id: id,
+          nama: nama,
+          kategori: kategori,
+          jumlah: jumlah,
+          status: status,
+          ruang: ruang,
+          deskripsi: deskripsi,
+          gambar: gambar,
+        );
+
+  factory AlatModel.fromJson(String id, Map<String, dynamic> json) {
+    return AlatModel(
       id: id,
-      nama: data['nama'] ?? '',
-      kategori: data['kategori'] ?? '',
-      jumlah: (data['jumlah'] ?? 0) is int ? data['jumlah'] : int.tryParse(data['jumlah'].toString()) ?? 0,
-      status: data['status'] ?? '',
-      deskripsi: data['deskripsi'] ?? '',
-      gambar: data['gambar'] ?? '',
+      nama: json['nama'] ?? '',
+      kategori: json['kategori'] ?? '',
+      jumlah: json['jumlah'] ?? 0,
+      status: json['status'] ?? 'tersedia',
+      ruang: json['ruang'] ?? '',
+      deskripsi: json['deskripsi'],
+      gambar: json['gambar'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'nama': nama,
+      'kategori': kategori,
+      'jumlah': jumlah,
+      'status': status,
+      'ruang': ruang,
+      if (deskripsi != null) 'deskripsi': deskripsi,
+      if (gambar != null) 'gambar': gambar,
+    };
+  }
+
 }

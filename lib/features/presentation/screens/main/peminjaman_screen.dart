@@ -1,22 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/peminjaman_screen.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/konfirmasi_peminjaman.dart';
 
 import 'package:provider/provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/alat_provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/auth_provider.dart';
-import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/history_provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/ai/ai_helper_screen.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/auth/login_screen.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/detail_alat_screen.dart';
 
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+class PeminjamanScreen extends StatefulWidget {
+  const PeminjamanScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  State<PeminjamanScreen> createState() => _PeminjamanScreenState();
 }
 
 final Map<String, Map<String, dynamic>> ruangStyle = {
@@ -47,11 +45,11 @@ final Map<String, Map<String, dynamic>> ruangStyle = {
   },
 };
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _PeminjamanScreenState extends State<PeminjamanScreen> {
   String _searchQuery = "";
   String _kategoriTerpilih = "semua";
-  String _ruangTerpilih = "semua";
-  int _selectedIndex = 0;
+  String _ruangTerpilih = "BA";
+  Map<String, int> _selectedItems = {}; // Track selected items
 
   final Map<String, IconData> _kategoriList = {
     "komponen": Icons.memory,
@@ -60,7 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     "lainnya": Icons.more_horiz,
   };
 
-  final List<String> _ruangList = ["semua", "BA", "IS", "NCS", "SE", "STUDIO"];
+  final List<String> _ruangList = ["BA", "IS", "NCS", "SE", "STUDIO"];
 
   @override
   void initState() {
@@ -68,39 +66,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Fetch alat data only once when screen loads
     Future.microtask(() {
       final alatProvider = context.read<AlatProvider>();
-      final authProvider = context.read<AuthProvider>();
-      final historyProvider = context.read<HistoryProvider>();
-
-      // Fetch alat data
       alatProvider.fetchAlatStream();
-
-      // Fetch user history
-      final userId =
-          authProvider.currentUser?.id ?? authProvider.firebaseUser?.uid;
-      if (userId != null) {
-        print("🔍 [DashboardScreen] Fetching history for user ID: $userId");
-        historyProvider.fetchUserHistory(userId);
-      } else {
-        print(
-          "⚠️ [DashboardScreen] No user ID available for fetching history.",
-        );
-      }
-    });
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      if (_selectedIndex == 1) {
-        // Fetch user history when navigating to the Riwayat tab
-        final authProvider = context.read<AuthProvider>();
-        final historyProvider = context.read<HistoryProvider>();
-        final userId =
-            authProvider.currentUser?.id ?? authProvider.firebaseUser?.uid;
-        if (userId != null) {
-          historyProvider.fetchUserHistory(userId);
-        }
-      }
     });
   }
 
@@ -109,7 +75,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text(_getAppBarTitle()),
+        title: Text('Peminjaman Alat Lab'),
         backgroundColor: Colors.white,
         elevation: 1,
         actions: [
@@ -120,81 +86,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      floatingActionButton: _selectedIndex == 0
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const AiHelperScreen(),
-                  ),
-                );
-              },
-              backgroundColor: colorMaroon,
-              foregroundColor: Colors.white,
-              child: const Icon(Icons.assistant),
-            )
-          : null,
-      body: _getSelectedContent(),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
-            activeIcon: Icon(Icons.history),
-            label: 'Riwayat',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profil',
-          ),
+      body: Column(
+        children: [
+          Expanded(child: _getSelectedContent()),
+          if (_selectedItems.isNotEmpty) _buildBottomSlider(),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: colorMaroon,
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        elevation: 8,
-        selectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
-        unselectedLabelStyle: const TextStyle(fontSize: 12),
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
       ),
     );
   }
 
-  String _getAppBarTitle() {
-    switch (_selectedIndex) {
-      case 0:
-        return 'Inventaris Lab';
-      case 1:
-        return 'Riwayat Peminjaman';
-      case 2:
-        return 'Profil';
-      default:
-        return 'SIMPEL';
-    }
-  }
-
   Widget _getSelectedContent() {
-    switch (_selectedIndex) {
-      case 0:
-        return _buildHomeContent();
-      case 1:
-        return _buildRiwayatContent();
-      case 2:
-        return _buildProfileContent();
-      default:
-        return _buildHomeContent();
-    }
+    return _buildHomeContent();
   }
 
   void _showLogoutDialog(BuildContext context) {
@@ -261,7 +163,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Selamat datang, $userName!",
+            "hai, $userName pilih alat yang ingin kamu pinjam",
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -269,10 +171,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            userEmail,
-            style: const TextStyle(fontSize: 14, color: Colors.white60),
-          ),
         ],
       ),
     );
@@ -330,12 +228,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
         itemBuilder: (context, index) {
           final ruang = _ruangList[index];
           final isActive = _ruangTerpilih == ruang;
+          final isDisabled =
+              _selectedItems.isNotEmpty && _ruangTerpilih != ruang;
 
-          return InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () => setState(() => _ruangTerpilih = ruang),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+          return GestureDetector(
+            onTap: isDisabled
+                ? () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Anda cuma bisa meminjam dari ruangan yang sama',
+                        ),
+                      ),
+                    );
+                  }
+                : () {
+                    setState(() {
+                      _ruangTerpilih = ruang;
+                    });
+                  },
+            child: Container(
               margin: const EdgeInsets.only(right: 12),
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               decoration: BoxDecoration(
@@ -345,18 +257,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 boxShadow: isActive
                     ? [
                         BoxShadow(
-                          color: colorMaroon.withOpacity(0.25),
+                          color: Colors.black.withOpacity(0.1),
                           blurRadius: 6,
                           offset: const Offset(0, 3),
                         ),
                       ]
-                    : [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 3,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                    : [],
               ),
               child: Center(
                 child: Text(
@@ -509,16 +415,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       itemBuilder: (context, index) {
         final alat = alatFiltered[index];
         final bool isTersedia = alat.status.toLowerCase() == 'tersedia';
+        final int selectedCount = _selectedItems[alat.id] ?? 0;
 
         return InkWell(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => DetailAlatScreen(alatId: alat.id),
-              ),
-            );
-          },
-          borderRadius: BorderRadius.circular(12),
+          onTap: () {},
           child: Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -558,6 +458,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(height: 6),
                   ruangChip(alat.ruang),
+                  const SizedBox(height: 8),
+                  if (selectedCount > 0)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.remove),
+                          onPressed: () {
+                            setState(() {
+                              if (selectedCount > 1) {
+                                _selectedItems[alat.id] = selectedCount - 1;
+                              } else {
+                                _selectedItems.remove(alat.id);
+                              }
+                            });
+                          },
+                        ),
+                        Text('$selectedCount'),
+                        IconButton(
+                          icon: Icon(Icons.add),
+                          onPressed: () {
+                            setState(() {
+                              if (selectedCount < alat.jumlah) {
+                                _selectedItems[alat.id] = selectedCount + 1;
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    )
+                  else
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedItems[alat.id] = 1;
+                        });
+                      },
+                      child: Text('Pinjam'),
+                    ),
                 ],
               ),
             ),
@@ -653,8 +592,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 "Daftar Alat",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 12),
-              _buildFloatingButton(context),
 
               const SizedBox(height: 12),
               _buildAlatGrid(alatList),
@@ -665,337 +602,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildProfileContent() {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, child) {
-        final user = authProvider.currentUser;
-        final email = user?.email ?? authProvider.firebaseUser?.email ?? '';
-        final name = user?.name ?? 'User';
-
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              // Profile Avatar
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [colorMaroon, colorMaroonDark],
-                  ),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(32),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.person, size: 64, color: colorMaroon),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: colorMaroonDark,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                email,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 32),
-
-              // Profile Menu
-              _buildProfileMenuItem(
-                icon: Icons.person_outline,
-                title: 'Edit Profil',
-                onTap: () {
-                  // TODO: Navigate to edit profile
-                },
-              ),
-              _buildProfileMenuItem(
-                icon: Icons.history,
-                title: 'Riwayat Peminjaman',
-                onTap: () {
-                  // TODO: Navigate to history
-                },
-              ),
-              _buildProfileMenuItem(
-                icon: Icons.settings_outlined,
-                title: 'Pengaturan',
-                onTap: () {
-                  // TODO: Navigate to settings
-                },
-              ),
-              _buildProfileMenuItem(
-                icon: Icons.help_outline,
-                title: 'Bantuan',
-                onTap: () {
-                  // TODO: Navigate to help
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildProfileMenuItem(
-                icon: Icons.logout,
-                title: 'Keluar',
-                textColor: Colors.red,
-                iconColor: Colors.red,
-                onTap: () => _showLogoutDialog(context),
-              ),
-            ],
-          ),
-        );
-      },
+  Widget _buildBottomSlider() {
+    final totalItems = _selectedItems.values.fold(
+      0,
+      (sum, count) => sum + count,
     );
-  }
 
-  Widget _buildRiwayatContent() {
-    final historyProvider = Provider.of<HistoryProvider>(context);
-    final historyList = historyProvider.state;
-
-    if (historyList.isEmpty) {
-      return _buildEmptyRiwayat();
-    }
-
-    return ListView.builder(
-      itemCount: historyList.length,
-      itemBuilder: (context, index) {
-        final history = historyList[index];
-
-final labStyle =
-            ruangStyle[history.lab] ??
-            {
-              "color": Colors.grey[300],
-              "text": Colors.black,
-              "icon": Icons.location_on,
-            };
-
-       return Card(
-  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-  color: colorMaroonLight,
-  elevation: 4,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(16),
-  ),
-  child: Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-          Row(
-                  children: [
-                    Icon(labStyle["icon"], color: labStyle["text"], size: 24),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Lab: ${history.lab}",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: labStyle["text"],
-                      ),
-                    ),
-                  ],
-                ),
-
-        const SizedBox(height: 8),
-
-        // ============================
-        // Card Tanggal (FULL WIDTH)
-        // ============================
-        SizedBox(
-          width: double.infinity,
-          child: Card(
-            color: Colors.white,
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Tanggal Pinjam: ${DateFormat('dd-MM-yyyy').format(history.tanggalPinjam)}",
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  Text(
-                    "Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(history.tanggalKembali)}",
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '$totalItems items',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // ============================
-        // Card Alasan (FULL WIDTH)
-        // ============================
-        SizedBox(
-          width: double.infinity,
-          child: Card(
-            color: Colors.white,
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Alasan: ${history.alasan}",
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // ============================
-        // Card Status (KE KANAN)
-        // ============================
-        Row(
-          children: [
-            const Spacer(),
-            Card(
-              color: history.status.toLowerCase() == 'disetujui'
-                  ? Colors.green
-                  : history.status.toLowerCase() == 'ditolak'
-                      ? Colors.red
-                      : Colors.orange,
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                child: Text(
-                  history.status,
-                  style: const TextStyle(fontSize: 14, color: Colors.white),
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 12),
-
-        const Text(
-          "Alat:",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // ============================
-        // List Alat
-        // ============================
-        ...history.alat.map((item) {
-          return FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance
-                .collection('alat')
-                .doc(item['id'])
-                .get(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (!snapshot.hasData || !snapshot.data!.exists) {
-                return const Text(
-                  "Data alat tidak ditemukan.",
-                  style: TextStyle(color: Colors.grey),
-                );
-              }
-
-              final alatData =
-                  snapshot.data!.data() as Map<String, dynamic>;
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: alatData['gambar'] != null
-                      ? Image.network(
-                          alatData['gambar'],
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                        )
-                      : const Icon(Icons.image_not_supported, size: 50),
-                  title: Text(
-                    alatData['nama'] ?? 'Tanpa Nama',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  subtitle: Text(
-                    'Jumlah: ${item['jumlah']}',
-                    style: const TextStyle(fontSize: 12),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FormPeminjamanScreen(
+                    selectedItems: _selectedItems,
+                    activeRoom: _ruangTerpilih,
                   ),
                 ),
               );
             },
-          );
-        }).toList(),
-      ],
-    ),
-  ),
-);
-      }
-    );
-  }
-
-  Widget _buildEmptyRiwayat() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: colorMaroonLight.withOpacity(0.1),
-              shape: BoxShape.circle,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorMaroon,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: Icon(
-              Icons.history,
-              size: 80,
-              color: colorMaroon.withOpacity(0.5),
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Belum Ada Riwayat',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: colorMaroonDark,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Riwayat peminjaman akan muncul di sini',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            child: Text('Lanjut Peminjaman'),
           ),
         ],
       ),
@@ -1032,29 +674,3 @@ final labStyle =
   }
 }
 
-Widget _buildFloatingButton(BuildContext context) {
-  return SizedBox(
-    width: MediaQuery.of(context).size.width * 0.9,
-    child: FloatingActionButton.extended(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => PeminjamanScreen()),
-        );
-      },
-      backgroundColor: colorMaroon,
-      elevation: 4,
-      label: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.touch_app_rounded, color: Colors.white),
-          const SizedBox(width: 10),
-          const Text(
-            "Ajukan Peminjaman",
-            style: TextStyle(fontSize: 16, color: Colors.white),
-          ),
-        ],
-      ),
-    ),
-  );
-}

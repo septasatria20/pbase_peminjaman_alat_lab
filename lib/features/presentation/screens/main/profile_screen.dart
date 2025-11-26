@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/auth/login_screen.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
+// import 'package:pbase_peminjaman_alat_lab/screens/auth/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -58,19 +59,13 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   const Text(
                     "Qusnul Diah Mawanti",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 4),
                   const Text(
                     "mahasiswa@polinema.ac.id",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black54,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                 ],
               ),
@@ -139,4 +134,3 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
-
