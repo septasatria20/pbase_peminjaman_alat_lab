@@ -53,6 +53,9 @@ class HistoryProvider extends ChangeNotifier {
         return HistoryEntity(
           id: doc.id,
           namaAlat: data['namaAlat'] ?? '-',
+          userId: data['userId'] ?? '',
+          alatId: data['alatId'] ?? '',
+          lab: data['lab'] ?? '',
           tanggalPinjam: parseDate(data['tanggalPinjam']),
           tanggalKembali: parseDate(data['tanggalKembali']),
           status: data['status'] ?? '-',
@@ -72,13 +75,19 @@ class HistoryProvider extends ChangeNotifier {
   }
 
   Future<void> addHistory({
+    required String userId,
+    required String alatId,
     required String namaAlat,
+    required String lab,
     required DateTime tanggalPinjam,
     required DateTime tanggalKembali,
     required String status,
   }) async {
     await addHistoryUseCase.call(
+      userId: userId,
+      alatId: alatId,
       namaAlat: namaAlat,
+      lab: lab,
       tanggalPinjam: tanggalPinjam,
       tanggalKembali: tanggalKembali,
       status: status,

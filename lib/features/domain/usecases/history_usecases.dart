@@ -18,13 +18,19 @@ class AddHistoryUseCase {
   AddHistoryUseCase(this.repository);
 
   Future<void> call({
+    required String userId,
+    required String alatId,
     required String namaAlat,
+    required String lab,
     required DateTime tanggalPinjam,
     required DateTime tanggalKembali,
     required String status,
   }) async {
     return repository.addHistory(
+      userId: userId,
+      alatId: alatId,
       namaAlat: namaAlat,
+      lab: lab,
       tanggalPinjam: tanggalPinjam,
       tanggalKembali: tanggalKembali,
       status: status,

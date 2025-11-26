@@ -15,7 +15,7 @@ class HistoryRemoteDataSourceImpl implements HistoryRemoteDataSource {
   @override
   Future<List<HistoryModel>> getUserHistory(String userId) async {
     final snapshot = await firestore
-        .collection('users')
+        .collection('pemijaman')
         .doc(userId)
         .collection('history')
         .orderBy("createdAt", descending: true)
@@ -34,22 +34,21 @@ class HistoryDatasource {
   HistoryDatasource({required this.firestore, required this.auth});
 
   Future<void> addHistory({
+    required String userId,
+    required String alatId,
     required String namaAlat,
+    required String lab,
     required DateTime tanggalPinjam,
     required DateTime tanggalKembali,
     required String status,
   }) async {
-    final uid = auth.currentUser?.uid;
-    if (uid == null) throw Exception("User not logged in");
-
-    final historyRef = firestore
-        .collection("users")
-        .doc(uid)
-        .collection("history")
-        .doc();
+    final historyRef = firestore.collection("history").doc();
 
     await historyRef.set({
+      "userId": userId,
+      "alatId": alatId,
       "namaAlat": namaAlat,
+      "lab": lab,
       "tanggalPinjam": tanggalPinjam.toIso8601String(),
       "tanggalKembali": tanggalKembali.toIso8601String(),
       "status": status,

@@ -13,28 +13,26 @@ class HistoryRepositoryImpl implements HistoryRepository {
   @override
   Future<List<HistoryEntity>> getUserHistory(String userId) async {
     try {
-      print(
-        '🔍 [HistoryRepositoryImpl] Fetching history for user ID: $userId',
-      ); // Debug log
+      print('🔍 [HistoryRepositoryImpl] Fetching history for user ID: $userId');
 
       final snapshot = await datasource.firestore
-          .collection('users')
-          .doc(userId)
           .collection('history')
+          .where('userId', isEqualTo: userId)
           .orderBy("createdAt", descending: true)
           .get();
 
       print(
         '📄 [HistoryRepositoryImpl] Query returned ${snapshot.docs.length} documents',
-      ); // Debug log
+      );
 
       final historyList = snapshot.docs.map((doc) {
-        print(
-          '📄 [HistoryRepositoryImpl] Document data: ${doc.data()}',
-        ); // Debug log
+        print('📄 [HistoryRepositoryImpl] Document data: ${doc.data()}');
         return HistoryEntity(
           id: doc.id,
+          userId: doc['userId'] ?? '',
+          alatId: doc['alatId'] ?? '',
           namaAlat: doc['namaAlat'] ?? '-',
+          lab: doc['lab'] ?? '',
           tanggalPinjam:
               (doc['tanggalPinjam'] as Timestamp?)?.toDate() ?? DateTime.now(),
           tanggalKembali:
@@ -47,7 +45,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
       print(
         '✅ [HistoryRepositoryImpl] History fetched successfully: $historyList',
-      ); // Debug log
+      );
       return historyList;
     } catch (e) {
       print('❌ [HistoryRepositoryImpl] Error fetching history: $e');
@@ -57,13 +55,19 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
   @override
   Future<void> addHistory({
+    required String userId,
+    required String alatId,
     required String namaAlat,
+    required String lab,
     required DateTime tanggalPinjam,
     required DateTime tanggalKembali,
     required String status,
   }) async {
     return datasource.addHistory(
+      userId: userId,
+      alatId: alatId,
       namaAlat: namaAlat,
+      lab: lab,
       tanggalPinjam: tanggalPinjam,
       tanggalKembali: tanggalKembali,
       status: status,
