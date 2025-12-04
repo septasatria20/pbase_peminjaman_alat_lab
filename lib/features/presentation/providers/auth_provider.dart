@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/user_repository.dart';
 import '../../domain/entities/user.dart' as domain;
 import '../../data/models/user_model.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _authRepository;
-  final FirebaseFirestore _firestore;
+  final UserRepository _userRepository;
   
   firebase_auth.User? _firebaseUser;
   domain.User? _currentUser;
@@ -15,7 +16,7 @@ class AuthProvider extends ChangeNotifier {
   String? _errorMessage;
   bool _isInitialized = false;
 
-  AuthProvider(this._authRepository, this._firestore) {
+  AuthProvider(this._authRepository, this._userRepository) {
     _initAuth();
   }
 
@@ -57,17 +58,10 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _loadUserData(String userId) async {
     try {
       print('Loading user data for: $userId');
-      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final user = await _userRepository.getUser(userId);
       
-      if (userDoc.exists) {
-        final data = userDoc.data()!;
-        _currentUser = UserModel(
-          id: data['id'] ?? userId,
-          name: data['name'] ?? 'User',
-          email: data['email'] ?? '',
-          role: data['role'] ?? 'user',
-          lab: data['lab'], // ADD THIS LINE
-        );
+      if (user != null) {
+        _currentUser = user;
         print('User loaded successfully: ${_currentUser?.name}');
         print('   Role: ${_currentUser?.role}');
         print('   Lab: ${_currentUser?.lab ?? "N/A"}'); // ADD THIS LINE

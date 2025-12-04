@@ -67,7 +67,7 @@ void setupDependencyInjection() {
     print('Creating AuthProvider');
     return AuthProvider(
       sl<AuthRepository>(),
-      sl<FirebaseFirestore>(),
+      sl<UserRepository>(),
     );
   });
 
