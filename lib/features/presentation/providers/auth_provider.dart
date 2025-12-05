@@ -8,6 +8,7 @@ import '../../data/models/user_model.dart';
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _authRepository;
   final FirebaseFirestore _firestore;
+  final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
   
   firebase_auth.User? _firebaseUser;
   domain.User? _currentUser;
@@ -153,5 +154,64 @@ class AuthProvider extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  // Update user name
+  Future<void> updateUserName(String newName) async {
+    try {
+      if (_currentUser == null) {
+        throw Exception('No user logged in');
+      }
+
+      await _firestore.collection('users').doc(_currentUser!.id).update({
+        'name': newName,
+      });
+
+      _currentUser = _currentUser!.copyWith(name: newName);
+      notifyListeners();
+
+      print('[AuthProvider] User name updated successfully');
+    } catch (e) {
+      print('[AuthProvider] Error updating user name: $e');
+      throw Exception('Gagal mengubah nama: $e');
+    }
+  }
+
+  // Update password
+  Future<void> updatePassword(String currentPassword, String newPassword) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null || user.email == null) {
+        throw Exception('No user logged in');
+      }
+
+      // Re-authenticate user with current password
+      final credential = firebase_auth.EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+
+      // Update password
+      await user.updatePassword(newPassword);
+
+      print('[AuthProvider] Password updated successfully');
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      print('[AuthProvider] Error updating password: ${e.code}');
+      
+      if (e.code == 'wrong-password') {
+        throw Exception('Password saat ini salah');
+      } else if (e.code == 'weak-password') {
+        throw Exception('Password terlalu lemah');
+      } else if (e.code == 'requires-recent-login') {
+        throw Exception('Silakan login ulang untuk mengubah password');
+      } else {
+        throw Exception('Gagal mengubah password: ${e.message}');
+      }
+    } catch (e) {
+      print('[AuthProvider] Error updating password: $e');
+      throw Exception('Gagal mengubah password: $e');
+    }
   }
 }

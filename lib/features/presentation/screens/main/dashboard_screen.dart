@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/peminjaman_screen.dart';
+import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/edit_profile_screen.dart';
 
 import 'package:provider/provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/alat_provider.dart';
@@ -122,6 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       floatingActionButton: _selectedIndex == 0
           ? FloatingActionButton(
+              heroTag: 'ai_helper_fab', // Add unique heroTag
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -716,28 +718,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.person_outline,
                 title: 'Edit Profil',
                 onTap: () {
-                  // TODO: Navigate to edit profile
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const EditProfileScreen(),
+                    ),
+                  );
                 },
               ),
               _buildProfileMenuItem(
                 icon: Icons.history,
                 title: 'Riwayat Peminjaman',
                 onTap: () {
-                  // TODO: Navigate to history
-                },
-              ),
-              _buildProfileMenuItem(
-                icon: Icons.settings_outlined,
-                title: 'Pengaturan',
-                onTap: () {
-                  // TODO: Navigate to settings
+                  setState(() {
+                    _selectedIndex = 1; // Navigate to history tab
+                  });
                 },
               ),
               _buildProfileMenuItem(
                 icon: Icons.help_outline,
                 title: 'Bantuan',
                 onTap: () {
-                  // TODO: Navigate to help
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      title: Row(
+                        children: const [
+                          Icon(Icons.help_outline, color: colorMaroon),
+                          SizedBox(width: 8),
+                          Text('Pusat Bantuan'),
+                        ],
+                      ),
+                      content: const Text(
+                        'Untuk bantuan lebih lanjut, silakan hubungi:\n\n'
+                        'Email: admin@polinema.ac.id\n'
+                        'Telp: (0341) 123456\n\n'
+                        'Jam Operasional:\n'
+                        'Senin - Jumat: 08.00 - 16.00 WIB',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Tutup'),
+                        ),
+                      ],
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 16),
@@ -1036,6 +1064,7 @@ Widget _buildFloatingButton(BuildContext context) {
   return SizedBox(
     width: MediaQuery.of(context).size.width * 0.9,
     child: FloatingActionButton.extended(
+      heroTag: 'peminjaman_fab', // Add unique heroTag
       onPressed: () {
         Navigator.push(
           context,

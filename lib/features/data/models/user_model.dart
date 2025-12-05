@@ -34,4 +34,21 @@ class UserModel extends User {
       if (lab != null) 'lab': lab,
     };
   }
+
+  @override
+  UserModel copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? role,
+    String? lab,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      lab: lab ?? this.lab,
+    );
+  }
 }

@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/alat_provider.dart';
 import '../../style/color.dart';
 import '../auth/login_screen.dart';
+import '../main/edit_profile_screen.dart';
 import '../../../../core/constants/lab_constants.dart';
 import 'add_edit_alat_screen.dart';
 
@@ -309,8 +310,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       title: 'Tambah Alat',
                       icon: Icons.add_box,
                       color: colorMaroon,
-                      onTap: () {
-                        setState(() => _selectedIndex = 1);
+                      onTap: () async {
+                        final result = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AddEditAlatScreen(),
+                          ),
+                        );
+                        
+                        // Refresh and show message if alat was added
+                        if (result == true && mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('✅ Alat berhasil ditambahkan'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
                       },
                     ),
                   ),
@@ -610,7 +625,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('❌ Error: $e'),
+              content: Text('Error: $e'),
               backgroundColor: Colors.red,
             ),
           );
@@ -715,17 +730,55 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               
               // Profile Menu
               _buildProfileMenuItem(
+                icon: Icons.person_outline,
+                title: 'Edit Profil',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const EditProfileScreen(),
+                    ),
+                  );
+                },
+              ),
+              _buildProfileMenuItem(
                 icon: Icons.admin_panel_settings,
                 title: 'Lab: $labName',
                 subtitle: 'Kode: $adminLab',
-                onTap: () {},
-              ),
-              _buildProfileMenuItem(
-                icon: Icons.settings_outlined,
-                title: 'Pengaturan',
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Fitur coming soon...')),
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      title: Row(
+                        children: const [
+                          Icon(Icons.info_outline, color: colorMaroon),
+                          SizedBox(width: 8),
+                          Text('Informasi Lab'),
+                        ],
+                      ),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Nama Lab: $labName'),
+                          const SizedBox(height: 8),
+                          Text('Kode Lab: $adminLab'),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Anda bertanggung jawab atas pengelolaan alat di lab ini.',
+                            style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Tutup'),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -733,8 +786,37 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 icon: Icons.help_outline,
                 title: 'Bantuan',
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Fitur coming soon...')),
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      title: Row(
+                        children: const [
+                          Icon(Icons.help_outline, color: colorMaroon),
+                          SizedBox(width: 8),
+                          Text('Pusat Bantuan Admin'),
+                        ],
+                      ),
+                      content: const Text(
+                        'Untuk bantuan lebih lanjut, silakan hubungi:\n\n'
+                        'Email: admin@polinema.ac.id\n'
+                        'Telp: (0341) 123456\n\n'
+                        'Jam Operasional:\n'
+                        'Senin - Jumat: 08.00 - 16.00 WIB\n\n'
+                        'Sebagai admin lab, Anda dapat:\n'
+                        '• Mengelola alat laboratorium\n'
+                        '• Memvalidasi peminjaman\n'
+                        '• Memantau stok alat',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Tutup'),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
