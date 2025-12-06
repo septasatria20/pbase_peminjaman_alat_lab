@@ -92,4 +92,64 @@ class HistoryRepositoryImpl implements HistoryRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<List<HistoryEntity>> getHistoryKonfirmasiPeminjaman() async {
+    try {
+      print('🔍 [HistoryRepositoryImpl] Fetching history for confirmation');
+
+      final snapshot = await datasource.firestore
+          .collection('peminjaman')
+          .where('status', isEqualTo: 'menunggu persetujuan')
+          .get();
+
+      print(
+        '📄 [HistoryRepositoryImpl] Query returned ${snapshot.docs.length} documents',
+      );
+
+      final historyList = snapshot.docs.map((doc) {
+        print('📄 [HistoryRepositoryImpl] Document data: ${doc.data()}');
+        return HistoryEntity(
+          id: doc.id,
+          userId: doc['userId'] ?? '',
+          alat: List<Map<String, dynamic>>.from(doc['alat'] ?? []),
+          lab: doc['lab'] ?? '',
+          tanggalPinjam: (doc['tanggalPinjam'] is Timestamp)
+              ? (doc['tanggalPinjam'] as Timestamp).toDate()
+              : DateTime.parse(doc['tanggalPinjam']),
+          tanggalKembali: (doc['tanggalKembali'] is Timestamp)
+              ? (doc['tanggalKembali'] as Timestamp).toDate()
+              : DateTime.parse(doc['tanggalKembali']),
+          status: doc['status'] ?? '',
+          alasan: doc['alasan'] ?? '',
+          createdAt:
+              (doc['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        );
+      }).toList();
+
+      print(
+        '✅ [HistoryRepositoryImpl] History konfirmasi fetched successfully: $historyList',
+      );
+      return historyList;
+    } catch (e) {
+      print('❌ [HistoryRepositoryImpl] Error fetching history konfirmasi: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> konfirmasiPeminjaman(String peminjamanId) async {
+    try {
+      print(
+        "📤 [HistoryRepositoryImpl] Konfirmasi peminjaman ID: $peminjamanId",
+      );
+
+      await datasource.konfirmasiPeminjaman(peminjamanId);
+
+      print("✅ [HistoryRepositoryImpl] Peminjaman confirmed successfully");
+    } catch (e) {
+      print("❌ [HistoryRepositoryImpl] Error konfirmasi peminjaman: $e");
+      rethrow;
+    }
+  }
 }

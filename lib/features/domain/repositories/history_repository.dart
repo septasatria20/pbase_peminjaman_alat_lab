@@ -12,4 +12,8 @@ abstract class HistoryRepository {
   });
 
   Future<List<HistoryEntity>> getUserHistory(String userId);
+
+  Future<List<HistoryEntity>> getHistoryKonfirmasiPeminjaman();
+
+  Future<void> konfirmasiPeminjaman(String peminjamanId);
 }

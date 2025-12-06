@@ -5,6 +5,7 @@ import '../models/history_model.dart';
 
 abstract class HistoryRemoteDataSource {
   Future<List<HistoryModel>> getUserHistory(String userId);
+  Future<List<HistoryModel>> getHistoryKonfirmasiPeminjaman();
 }
 
 class HistoryRemoteDataSourceImpl implements HistoryRemoteDataSource {
@@ -16,8 +17,19 @@ class HistoryRemoteDataSourceImpl implements HistoryRemoteDataSource {
   Future<List<HistoryModel>> getUserHistory(String userId) async {
     final snapshot = await firestore
         .collection('peminjaman')
-       
         .where('userId', isEqualTo: userId)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => HistoryModel.fromFirestore(doc.data(), doc.id))
+        .toList();
+  }
+
+  @override
+  Future<List<HistoryModel>> getHistoryKonfirmasiPeminjaman() async {
+    final snapshot = await firestore
+        .collection('peminjaman')
+        .where('status', isEqualTo: 'menunggu persetujuan')
         .get();
 
     return snapshot.docs
@@ -69,6 +81,65 @@ class HistoryDatasource {
       print("✅ [HistoryDatasource] Data successfully sent to Firestore.");
     } catch (e) {
       print("❌ [HistoryDatasource] Error sending data to Firestore: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> konfirmasiPeminjaman(String peminjamanId) async {
+    try {
+      print("📤 [HistoryDatasource] Konfirmasi peminjaman ID: $peminjamanId");
+
+      // Get peminjaman document
+      final peminjamanDoc = await firestore
+          .collection("peminjaman")
+          .doc(peminjamanId)
+          .get();
+
+      if (!peminjamanDoc.exists) {
+        throw Exception("Peminjaman tidak ditemukan");
+      }
+
+      final peminjamanData = peminjamanDoc.data()!;
+      final List<Map<String, dynamic>> alatList =
+          List<Map<String, dynamic>>.from(peminjamanData['alat'] ?? []);
+
+      // Update peminjaman status
+      await firestore.collection("peminjaman").doc(peminjamanId).update({
+        "status": "disetujui",
+      });
+
+      print("✅ [HistoryDatasource] Status updated to 'disetujui'");
+
+      // Update alat quantities
+      final batch = firestore.batch();
+
+      for (var alat in alatList) {
+        final alatId = alat['id'] as String;
+        final jumlahPinjam = alat['jumlah'] as int;
+
+        print(
+          "📦 [HistoryDatasource] Reducing alat ID: $alatId by $jumlahPinjam",
+        );
+
+        final alatRef = firestore.collection("alat").doc(alatId);
+        final alatDoc = await alatRef.get();
+
+        if (alatDoc.exists) {
+          final currentJumlah = alatDoc.data()?['jumlah'] as int? ?? 0;
+          final newJumlah = currentJumlah - jumlahPinjam;
+
+          if (newJumlah < 0) {
+            throw Exception("Jumlah alat tidak mencukupi untuk ID: $alatId");
+          }
+
+          batch.update(alatRef, {"jumlah": newJumlah});
+        }
+      }
+
+      await batch.commit();
+      print("✅ [HistoryDatasource] Alat quantities updated successfully");
+    } catch (e) {
+      print("❌ [HistoryDatasource] Error konfirmasi peminjaman: $e");
       rethrow;
     }
   }

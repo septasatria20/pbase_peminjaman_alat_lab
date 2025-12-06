@@ -1,7 +1,7 @@
 class HistoryEntity {
   final String id;
   final String userId;
-  final List<Map<String, dynamic>> alat; // Array of alat objects
+  final List<Map<String, dynamic>> alat; 
   final String lab;
   final DateTime tanggalPinjam;
   final DateTime tanggalKembali;

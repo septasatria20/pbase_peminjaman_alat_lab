@@ -108,6 +108,9 @@ void setupDependencyInjection() {
     return HistoryProvider(
       getUserHistory: sl<GetUserHistory>(),
       addHistoryUseCase: sl<AddHistoryUseCase>(),
+      getHistoryKonfirmasiPeminjaman: sl<GetHistoryKonfirmasiPeminjaman>(),
+      konfirmasiPeminjamanUseCase: sl<KonfirmasiPeminjamanUseCase>(),
+
     );
   });
   // Add History Use Case
@@ -118,6 +121,14 @@ void setupDependencyInjection() {
   sl.registerLazySingleton<GetUserHistory>(() {
     print('  ✅ Registering GetUserHistory');
     return GetUserHistory(sl<HistoryRepository>());
+  });
+  sl.registerLazySingleton<GetHistoryKonfirmasiPeminjaman>(() {
+    print('  ✅ Registering GetHistoryKonfirmasiPeminjaman');
+    return GetHistoryKonfirmasiPeminjaman(sl<HistoryRepository>());
+  });
+  sl.registerLazySingleton<KonfirmasiPeminjamanUseCase>(() {
+    print('  ✅ Registering KonfirmasiPeminjamanUseCase');
+    return KonfirmasiPeminjamanUseCase(sl<HistoryRepository>());
   });
   print('Dependency Injection setup completed\n');
 }

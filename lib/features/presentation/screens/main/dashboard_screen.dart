@@ -796,7 +796,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       itemBuilder: (context, index) {
         final history = historyList[index];
 
-final labStyle =
+        final labStyle =
             ruangStyle[history.lab] ??
             {
               "color": Colors.grey[300],
@@ -804,19 +804,19 @@ final labStyle =
               "icon": Icons.location_on,
             };
 
-       return Card(
-  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-  color: colorMaroonLight,
-  elevation: 4,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(16),
-  ),
-  child: Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-          Row(
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          color: colorMaroonLight,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
                     Icon(labStyle["icon"], color: labStyle["text"], size: 24),
                     const SizedBox(width: 8),
@@ -831,165 +831,170 @@ final labStyle =
                   ],
                 ),
 
-        const SizedBox(height: 8),
+                const SizedBox(height: 8),
 
-        // ============================
-        // Card Tanggal (FULL WIDTH)
-        // ============================
-        SizedBox(
-          width: double.infinity,
-          child: Card(
-            color: Colors.white,
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Tanggal Pinjam: ${DateFormat('dd-MM-yyyy').format(history.tanggalPinjam)}",
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  Text(
-                    "Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(history.tanggalKembali)}",
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // ============================
-        // Card Alasan (FULL WIDTH)
-        // ============================
-        SizedBox(
-          width: double.infinity,
-          child: Card(
-            color: Colors.white,
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Alasan: ${history.alasan}",
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black,
+                // ============================
+                // Card Tanggal (FULL WIDTH)
+                // ============================
+                SizedBox(
+                  width: double.infinity,
+                  child: Card(
+                    color: Colors.white,
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Tanggal Pinjam: ${DateFormat('dd-MM-yyyy').format(history.tanggalPinjam)}",
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          Text(
+                            "Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(history.tanggalKembali)}",
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // ============================
-        // Card Status (KE KANAN)
-        // ============================
-        Row(
-          children: [
-            const Spacer(),
-            Card(
-              color: history.status.toLowerCase() == 'disetujui'
-                  ? Colors.green
-                  : history.status.toLowerCase() == 'ditolak'
-                      ? Colors.red
-                      : Colors.orange,
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                child: Text(
-                  history.status,
-                  style: const TextStyle(fontSize: 14, color: Colors.white),
                 ),
-              ),
-            ),
-          ],
-        ),
 
-        const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
-        const Text(
-          "Alat:",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // ============================
-        // List Alat
-        // ============================
-        ...history.alat.map((item) {
-          return FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance
-                .collection('alat')
-                .doc(item['id'])
-                .get(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (!snapshot.hasData || !snapshot.data!.exists) {
-                return const Text(
-                  "Data alat tidak ditemukan.",
-                  style: TextStyle(color: Colors.grey),
-                );
-              }
-
-              final alatData =
-                  snapshot.data!.data() as Map<String, dynamic>;
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: alatData['gambar'] != null
-                      ? Image.network(
-                          alatData['gambar'],
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                        )
-                      : const Icon(Icons.image_not_supported, size: 50),
-                  title: Text(
-                    alatData['nama'] ?? 'Tanpa Nama',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  subtitle: Text(
-                    'Jumlah: ${item['jumlah']}',
-                    style: const TextStyle(fontSize: 12),
+                // ============================
+                // Card Alasan (FULL WIDTH)
+                // ============================
+                SizedBox(
+                  width: double.infinity,
+                  child: Card(
+                    color: Colors.white,
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Alasan: ${history.alasan}",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              );
-            },
-          );
-        }).toList(),
-      ],
-    ),
-  ),
-);
-      }
+
+                const SizedBox(height: 8),
+
+                // ============================
+                // Card Status (KE KANAN)
+                // ============================
+                Row(
+                  children: [
+                    const Spacer(),
+                    Card(
+                      color: history.status.toLowerCase() == 'disetujui'
+                          ? Colors.green
+                          : history.status.toLowerCase() == 'ditolak'
+                          ? Colors.red
+                          : Colors.orange,
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 16,
+                        ),
+                        child: Text(
+                          history.status,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                const Text(
+                  "Alat:",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // ============================
+                // List Alat
+                // ============================
+                ...history.alat.map((item) {
+                  return FutureBuilder<DocumentSnapshot>(
+                    future: FirebaseFirestore.instance
+                        .collection('alat')
+                        .doc(item['id'])
+                        .get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (!snapshot.hasData || !snapshot.data!.exists) {
+                        return const Text(
+                          "Data alat tidak ditemukan.",
+                          style: TextStyle(color: Colors.grey),
+                        );
+                      }
+
+                      final alatData =
+                          snapshot.data!.data() as Map<String, dynamic>;
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: alatData['gambar'] != null
+                              ? Image.network(
+                                  alatData['gambar'],
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                )
+                              : const Icon(Icons.image_not_supported, size: 50),
+                          title: Text(
+                            alatData['nama'] ?? 'Tanpa Nama',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          subtitle: Text(
+                            'Jumlah: ${item['jumlah']}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

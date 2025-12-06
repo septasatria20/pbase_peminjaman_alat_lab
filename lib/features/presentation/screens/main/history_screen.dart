@@ -5,7 +5,7 @@ import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart
 class _HistoryItem {
   final String namaAlat;
   final String tanggal;
-  final String status; // 'Disetujui', 'Diajukan', 'Selesai', 'Ditolak'
+  final String status;  
   final IconData icon;
 
   const _HistoryItem({
@@ -70,7 +70,7 @@ class HistoryScreen extends StatelessWidget {
         return Colors.orange[50]!;
       case 'Ditolak':
         return Colors.red[50]!;
-      default: // Selesai
+      default: 
         return Colors.grey[100]!;
     }
   }
@@ -172,7 +172,7 @@ class HistoryScreen extends StatelessWidget {
             ),
 
             // --- FITUR: TOMBOL PENGEMBALIAN ---
-            // Tampilkan tombol hanya jika status "Disetujui"
+           
             if (item.status == 'Disetujui')
               Column(
                 children: [
@@ -188,7 +188,7 @@ class HistoryScreen extends StatelessWidget {
                         ),
                       ),
                       onPressed: () {
-                        // Tampilkan dialog konfirmasi
+                        //dialog konfirmasi
                         showDialog(
                           context: context,
                           builder: (ctx) => AlertDialog(
@@ -208,8 +208,8 @@ class HistoryScreen extends StatelessWidget {
                                 ),
                                 child: const Text("Ya, Ajukan"),
                                 onPressed: () {
-                                  // TODO: mengubah status di Firebase menjadi
-                                  // "Menunggu Konfirmasi Pengembalian"
+                                 
+                                  
                                   Navigator.of(ctx).pop();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(

@@ -49,7 +49,7 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
   String _searchQuery = "";
   String _kategoriTerpilih = "semua";
   String _ruangTerpilih = "BA";
-  Map<String, int> _selectedItems = {}; // Track selected items
+  Map<String, int> _selectedItems = {}; 
 
   final Map<String, IconData> _kategoriList = {
     "komponen": Icons.memory,
@@ -63,7 +63,6 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch alat data only once when screen loads
     Future.microtask(() {
       final alatProvider = context.read<AlatProvider>();
       alatProvider.fetchAlatStream();
@@ -141,13 +140,7 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
         authProvider.firebaseUser?.email ??
         '';
 
-    // Debug logs
-    print('=== Dashboard Welcome Card ===');
-    print('Current User Name: ${authProvider.currentUser?.name}');
-    print('Current User Email: ${authProvider.currentUser?.email}');
-    print('Firebase User Email: ${authProvider.firebaseUser?.email}');
-    print('=============================');
-
+  
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -349,7 +342,6 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
   }
 
   Widget _buildAlatGrid(List<dynamic> alatList) {
-    // Show loading if list is empty
     if (alatList.isEmpty) {
       return Center(
         child: Column(
@@ -385,7 +377,6 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
       return cocokKategori && cocokCari && cocokRuang;
     }).toList();
 
-    // Show message if filtered list is empty
     if (alatFiltered.isEmpty) {
       return Center(
         child: Column(
@@ -446,7 +437,6 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                     ),
                   ),
                   const Spacer(),
-                  // Highlight hasil pencarian
                   _highlightText(alat.nama, _searchQuery, isTersedia),
                   const SizedBox(height: 4),
                   Text(

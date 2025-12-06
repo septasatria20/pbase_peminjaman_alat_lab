@@ -55,3 +55,36 @@ class AddHistoryUseCase {
     }
   }
 }
+
+class GetHistoryKonfirmasiPeminjaman {
+  final HistoryRepository repository;
+
+  GetHistoryKonfirmasiPeminjaman(this.repository);
+
+  Future<List<HistoryEntity>> call() {
+    return repository.getHistoryKonfirmasiPeminjaman();
+  }
+}
+
+class KonfirmasiPeminjamanUseCase {
+  final HistoryRepository repository;
+
+  KonfirmasiPeminjamanUseCase(this.repository);
+
+  Future<void> call(String peminjamanId) async {
+    try {
+      print(
+        "📤 [KonfirmasiPeminjamanUseCase] Confirming peminjaman ID: $peminjamanId",
+      );
+
+      await repository.konfirmasiPeminjaman(peminjamanId);
+
+      print(
+        "✅ [KonfirmasiPeminjamanUseCase] Peminjaman confirmed successfully",
+      );
+    } catch (e) {
+      print("❌ [KonfirmasiPeminjamanUseCase] Error: $e");
+      rethrow;
+    }
+  }
+}
