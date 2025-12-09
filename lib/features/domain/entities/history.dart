@@ -20,4 +20,30 @@ class HistoryEntity {
     required this.alasan,
     required this.createdAt,
   });
+
+  /// Create a copy of this entity with optional parameter overrides
+  HistoryEntity copyWith({
+    String? id,
+    String? userId,
+    List<Map<String, dynamic>>? alat,
+    String? lab,
+    DateTime? tanggalPinjam,
+    DateTime? tanggalKembali,
+    String? status,
+    String? alasan,
+    DateTime? createdAt,
+  }) {
+    return HistoryEntity(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      alat: alat ?? this.alat,
+      lab: lab ?? this.lab,
+      tanggalPinjam: tanggalPinjam ?? this.tanggalPinjam,
+      tanggalKembali: tanggalKembali ?? this.tanggalKembali,
+      status: status ?? this.status,
+      alasan: alasan ?? this.alasan,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
+

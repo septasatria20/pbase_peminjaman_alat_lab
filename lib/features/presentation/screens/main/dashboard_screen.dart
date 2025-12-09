@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pbase_peminjaman_alat_lab/features/domain/entities/history.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/peminjaman_screen.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/edit_profile_screen.dart';
 
@@ -52,6 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _searchQuery = "";
   String _kategoriTerpilih = "semua";
   String _ruangTerpilih = "semua";
+  String _statusTerpilih = "semua"; // Filter untuk riwayat
   int _selectedIndex = 0;
 
   final Map<String, IconData> _kategoriList = {
@@ -62,6 +64,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   };
 
   final List<String> _ruangList = ["semua", "BA", "IS", "NCS", "SE", "STUDIO"];
+  
+  final List<String> _statusList = [
+    "semua",
+    "diajukan",
+    "disetujui",
+    "dikembalikan",
+    "ditolak"
+  ];
 
   @override
   void initState() {
@@ -234,6 +244,137 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _showKembaliDialog(BuildContext context, HistoryEntity history) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle_outline, color: Colors.blue),
+            SizedBox(width: 8),
+            Text('Konfirmasi Pengembalian'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Apakah Anda yakin ingin mengembalikan alat ini?'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Lab: ${history.lab}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(history.tanggalKembali)}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _handleKembaliAlat(context, history.id);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Kembalikan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleKembaliAlat(BuildContext context, String peminjamanId) async {
+    try {
+      final historyProvider = context.read<HistoryProvider>();
+
+      // Show loading dialog
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: colorMaroon),
+                const SizedBox(height: 16),
+                const Text('Memproses pengembalian...'),
+              ],
+            ),
+          ),
+        );
+      }
+
+      // Update status ke dikembalikan
+      await historyProvider.updateStatusToReturned(peminjamanId);
+
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('Alat berhasil dikembalikan!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+        
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Gagal mengembalikan alat: $e'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildWelcomeCard(AuthProvider authProvider) {
     final userName = authProvider.currentUser?.name ?? 'Loading...';
     final userEmail =
@@ -363,6 +504,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Center(
                 child: Text(
                   ruang.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isActive ? Colors.white : Colors.black87,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildStatusList() {
+    return SizedBox(
+      height: 60,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _statusList.length,
+        itemBuilder: (context, index) {
+          final status = _statusList[index];
+          final isActive = _statusTerpilih == status;
+
+          return InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () => setState(() => _statusTerpilih = status),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              decoration: BoxDecoration(
+                color: isActive ? colorMaroon : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: isActive ? null : Border.all(color: Colors.grey[300]!),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: colorMaroon.withOpacity(0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 3,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
+              child: Center(
+                child: Text(
+                  status[0].toUpperCase() + status.substring(1),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -783,218 +979,286 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  /// Map Firebase status to filter status
+  /// Firebase uses "menunggu persetujuan" but filter uses "diajukan"
+  bool _statusMatches(String firestbaseStatus, String filterStatus) {
+    final fbStatus = firestbaseStatus.toLowerCase();
+    final filter = filterStatus.toLowerCase();
+
+    // Map Firebase status ke filter status
+    if (filter == "diajukan" &&
+        (fbStatus == "diajukan" || fbStatus == "menunggu persetujuan")) {
+      return true;
+    }
+    if (filter == "disetujui" && fbStatus == "disetujui") {
+      return true;
+    }
+    if (filter == "dikembalikan" && fbStatus == "dikembalikan") {
+      return true;
+    }
+    if (filter == "ditolak" && fbStatus == "ditolak") {
+      return true;
+    }
+    return false;
+  }
+
   Widget _buildRiwayatContent() {
     final historyProvider = Provider.of<HistoryProvider>(context);
     final historyList = historyProvider.state;
+
+    // Filter berdasarkan status yang dipilih
+    final filteredList = historyList.where((history) {
+      if (_statusTerpilih == "semua") {
+        return true;
+      }
+      return _statusMatches(history.status, _statusTerpilih);
+    }).toList();
 
     if (historyList.isEmpty) {
       return _buildEmptyRiwayat();
     }
 
-    return ListView.builder(
-      itemCount: historyList.length,
-      itemBuilder: (context, index) {
-        final history = historyList[index];
-
-        final labStyle =
-            ruangStyle[history.lab] ??
-            {
-              "color": Colors.grey[300],
-              "text": Colors.black,
-              "icon": Icons.location_on,
-            };
-
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          color: colorMaroonLight,
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Filter Status",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(labStyle["icon"], color: labStyle["text"], size: 24),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Lab: ${history.lab}",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: labStyle["text"],
-                      ),
-                    ),
-                  ],
-                ),
+          const SizedBox(height: 12),
+          _buildStatusList(),
+          const SizedBox(height: 24),
+          if (filteredList.isEmpty)
+            _buildEmptyRiwayat()
+          else
+            ListView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: filteredList.length,
+              itemBuilder: (context, index) {
+                final history = filteredList[index];
+                final labStyle =
+                    ruangStyle[history.lab] ??
+                    {
+                      "color": Colors.grey[300],
+                      "text": Colors.black,
+                      "icon": Icons.location_on,
+                    };
 
-                const SizedBox(height: 8),
-
-                // ============================
-                // Card Tanggal (FULL WIDTH)
-                // ============================
-                SizedBox(
-                  width: double.infinity,
-                  child: Card(
-                    color: Colors.white,
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Tanggal Pinjam: ${DateFormat('dd-MM-yyyy').format(history.tanggalPinjam)}",
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                          Text(
-                            "Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(history.tanggalKembali)}",
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ],
-                      ),
-                    ),
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  color: colorMaroonLight,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // ============================
-                // Card Alasan (FULL WIDTH)
-                // ============================
-                SizedBox(
-                  width: double.infinity,
-                  child: Card(
-                    color: Colors.white,
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Alasan: ${history.alasan}",
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(labStyle["icon"],
+                                color: labStyle["text"], size: 24),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Lab: ${history.lab}",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: labStyle["text"],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: Card(
+                            color: Colors.white,
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Tanggal Pinjam: ${DateFormat('dd-MM-yyyy').format(history.tanggalPinjam)}",
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  Text(
+                                    "Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(history.tanggalKembali)}",
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // ============================
-                // Card Status (KE KANAN)
-                // ============================
-                Row(
-                  children: [
-                    const Spacer(),
-                    Card(
-                      color: history.status.toLowerCase() == 'disetujui'
-                          ? Colors.green
-                          : history.status.toLowerCase() == 'ditolak'
-                          ? Colors.red
-                          : Colors.orange,
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 16,
                         ),
-                        child: Text(
-                          history.status,
-                          style: const TextStyle(
-                            fontSize: 14,
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: Card(
                             color: Colors.white,
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Alasan: ${history.alasan}",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Spacer(),
+                            Card(
+                              color: history.status.toLowerCase() == 'disetujui'
+                                  ? Colors.green
+                                  : history.status.toLowerCase() == 'ditolak'
+                                      ? Colors.red
+                                      : history.status.toLowerCase() ==
+                                              'dikembalikan'
+                                          ? Colors.blue
+                                          : Colors.orange, // menunggu persetujuan & diajukan = orange
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 16),
+                                child: Text(
+                                  // Display "Diajukan" for both "menunggu persetujuan" and "diajukan"
+                                  history.status.toLowerCase() == 'menunggu persetujuan'
+                                      ? 'Diajukan'
+                                      : history.status[0].toUpperCase() +
+                                          history.status.substring(1),
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          "Alat:",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ...history.alat.map((item) {
+                          return FutureBuilder<DocumentSnapshot>(
+                            future: FirebaseFirestore.instance
+                                .collection('alat')
+                                .doc(item['id'])
+                                .get(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+
+                              if (!snapshot.hasData || !snapshot.data!.exists) {
+                                return const Text(
+                                  "Data alat tidak ditemukan.",
+                                  style: TextStyle(color: Colors.grey),
+                                );
+                              }
+
+                              final alatData = snapshot.data!.data()
+                                  as Map<String, dynamic>;
+
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: ListTile(
+                                  leading: alatData['gambar'] != null
+                                      ? Image.network(
+                                          alatData['gambar'],
+                                          width: 50,
+                                          height: 50,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : const Icon(Icons.image_not_supported,
+                                          size: 50),
+                                  title: Text(
+                                    alatData['nama'] ?? 'Tanpa Nama',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  subtitle: Text(
+                                    'Jumlah: ${item['jumlah']}',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        }).toList(),
+                        const SizedBox(height: 12),
+                        // Tombol Kembalikan - hanya muncul jika status = disetujui
+                        if (history.status.toLowerCase() == 'disetujui')
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () =>
+                                  _showKembaliDialog(context, history),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: colorMaroon,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.check_circle_outline),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Kembalikan Alat',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                const Text(
-                  "Alat:",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
                   ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // ============================
-                // List Alat
-                // ============================
-                ...history.alat.map((item) {
-                  return FutureBuilder<DocumentSnapshot>(
-                    future: FirebaseFirestore.instance
-                        .collection('alat')
-                        .doc(item['id'])
-                        .get(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      if (!snapshot.hasData || !snapshot.data!.exists) {
-                        return const Text(
-                          "Data alat tidak ditemukan.",
-                          style: TextStyle(color: Colors.grey),
-                        );
-                      }
-
-                      final alatData =
-                          snapshot.data!.data() as Map<String, dynamic>;
-
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          leading: alatData['gambar'] != null
-                              ? Image.network(
-                                  alatData['gambar'],
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                )
-                              : const Icon(Icons.image_not_supported, size: 50),
-                          title: Text(
-                            alatData['nama'] ?? 'Tanpa Nama',
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                          subtitle: Text(
-                            'Jumlah: ${item['jumlah']}',
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }).toList(),
-              ],
+                );
+              },
             ),
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 

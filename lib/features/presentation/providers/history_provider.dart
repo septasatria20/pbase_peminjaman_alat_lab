@@ -9,6 +9,7 @@ class HistoryProvider extends ChangeNotifier {
   final AddHistoryUseCase addHistoryUseCase;
   final GetHistoryKonfirmasiPeminjaman getHistoryKonfirmasiPeminjaman;
   final KonfirmasiPeminjamanUseCase konfirmasiPeminjamanUseCase;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   HistoryProvider({
     required this.getUserHistory,
@@ -106,4 +107,33 @@ class HistoryProvider extends ChangeNotifier {
       rethrow;
     }
   }
+
+  /// Update status peminjaman menjadi "dikembalikan"
+  Future<void> updateStatusToReturned(String peminjamanId) async {
+    try {
+      print(
+        "📤 [HistoryProvider] Updating status for peminjaman ID: $peminjamanId",
+      );
+
+      await _firestore.collection('peminjaman').doc(peminjamanId).update({
+        'status': 'dikembalikan',
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      print("✅ [HistoryProvider] Status updated successfully to 'dikembalikan'");
+
+      // Refresh history list
+      final currentHistoryIndex = _historyList.indexWhere((h) => h.id == peminjamanId);
+      if (currentHistoryIndex != -1) {
+        _historyList[currentHistoryIndex] = _historyList[currentHistoryIndex].copyWith(
+          status: 'dikembalikan',
+        );
+        notifyListeners();
+      }
+    } catch (e) {
+      print("❌ [HistoryProvider] Error updating status: $e");
+      rethrow;
+    }
+  }
 }
+
