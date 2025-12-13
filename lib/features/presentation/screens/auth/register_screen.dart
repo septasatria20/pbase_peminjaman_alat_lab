@@ -4,6 +4,15 @@ import '../../providers/auth_provider.dart';
 import '../../style/color.dart';
 import '../main/dashboard_screen.dart';
 
+// Tambahkan tema baru di awal file
+const Color themeGreen = Color(0xFF4ADE80);
+const Color themeBlue = Color(0xFF38BDF8);
+const LinearGradient themeGradient = LinearGradient(
+  colors: [themeGreen, themeBlue],
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+);
+
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
 
@@ -137,14 +146,14 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              colorMaroon.withOpacity(0.05),
-              Colors.white,
-              colorMaroonLight.withOpacity(0.05),
+              Color(0xFFF0FDF4), // Very light green
+              Color(0xFFF8FAFC), // Light grey-blue
+              Color(0xFFECFEFF), // Very light cyan
             ],
           ),
         ),
@@ -169,30 +178,29 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                         ],
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new, color: colorMaroon),
+                        icon: const Icon(Icons.arrow_back_ios_new, color: themeBlue),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Logo
+                    // Logo dengan gambar custom
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [colorMaroon, colorMaroonDark],
-                        ),
+                        gradient: themeGradient,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: colorMaroon.withOpacity(0.3),
+                            color: themeBlue.withOpacity(0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.science_rounded,
-                        size: 24,
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 24,
+                        height: 24,
                         color: Colors.white,
                       ),
                     ),
@@ -201,13 +209,16 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'SIMPEL',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: colorMaroonDark,
-                            letterSpacing: 0.5,
+                        ShaderMask(
+                          shaderCallback: (bounds) => themeGradient.createShader(bounds),
+                          child: const Text(
+                            'SIMPEL',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
                         Text(
@@ -238,13 +249,16 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           child: Column(
                             children: [
                               // Title
-                              const Text(
-                                'Buat Akun Baru',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: colorMaroonDark,
-                                  letterSpacing: -0.5,
+                              ShaderMask(
+                                shaderCallback: (bounds) => themeGradient.createShader(bounds),
+                                child: const Text(
+                                  'Buat Akun Baru',
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: -0.5,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -267,7 +281,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                   borderRadius: BorderRadius.circular(24),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: colorMaroon.withOpacity(0.08),
+                                      color: themeBlue.withOpacity(0.08),
                                       blurRadius: 30,
                                       offset: const Offset(0, 10),
                                     ),
@@ -279,7 +293,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                     _buildTextField(
                                       controller: _nameController,
                                       label: 'Nama Lengkap',
-                                      hint: '',
+                                      hint: 'John Doe',
                                       icon: Icons.person_outline,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
@@ -311,7 +325,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                     _buildTextField(
                                       controller: _passwordController,
                                       label: 'Password',
-                                      hint: '',
+                                      hint: '••••••••',
                                       icon: Icons.lock_outline,
                                       obscureText: _obscurePassword,
                                       suffixIcon: IconButton(
@@ -340,7 +354,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                     _buildTextField(
                                       controller: _confirmPasswordController,
                                       label: 'Konfirmasi Password',
-                                      hint: '',
+                                      hint: '••••••••',
                                       icon: Icons.lock_outline,
                                       obscureText: _obscureConfirmPassword,
                                       suffixIcon: IconButton(
@@ -372,12 +386,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                         return Container(
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(16),
-                                            gradient: LinearGradient(
-                                              colors: [colorMaroon, colorMaroonDark],
-                                            ),
+                                            gradient: themeGradient,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: colorMaroon.withOpacity(0.3),
+                                                color: themeBlue.withOpacity(0.3),
                                                 blurRadius: 12,
                                                 offset: const Offset(0, 6),
                                               ),
@@ -456,10 +468,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           margin: const EdgeInsets.all(12),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: colorMaroonLight.withOpacity(0.1),
+            gradient: themeGradient.scale(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 20, color: colorMaroon),
+          child: Icon(icon, size: 20, color: themeBlue),
         ),
         suffixIcon: suffixIcon,
         filled: true,
@@ -474,7 +486,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: colorMaroon, width: 2),
+          borderSide: const BorderSide(color: themeBlue, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),

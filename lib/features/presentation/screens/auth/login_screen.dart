@@ -4,8 +4,17 @@ import '../../providers/auth_provider.dart';
 import '../../style/color.dart';
 import 'register_screen.dart';
 import '../main/dashboard_screen.dart';
-import '../admin/admin_dashboard_screen.dart'; // Import Admin Dashboard
-import '../../../../core/utils/seed_admin.dart'; // Add this import
+import '../admin/admin_dashboard_screen.dart';
+import '../../../../core/utils/seed_admin.dart';
+
+// Tambahkan tema baru
+const Color themeGreen = Color(0xFF4ADE80);
+const Color themeBlue = Color(0xFF38BDF8);
+const LinearGradient themeGradient = LinearGradient(
+  colors: [themeGreen, themeBlue],
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+);
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -142,14 +151,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              colorMaroon.withOpacity(0.05),
-              Colors.white,
-              colorMaroonLight.withOpacity(0.05),
+              Color(0xFFF0FDF4), // Very light green
+              Color(0xFFF8FAFC), // Light grey-blue
+              Color(0xFFECFEFF), // Very light cyan
             ],
           ),
         ),
@@ -161,26 +170,25 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
-                    // Logo
+                    // Logo dengan gambar custom
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [colorMaroon, colorMaroonDark],
-                        ),
+                        gradient: themeGradient,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: colorMaroon.withOpacity(0.3),
+                            color: themeBlue.withOpacity(0.3),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.science_rounded,
-                        size: 32,
-                        color: Colors.white,
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 32,
+                        height: 32,
+                        color: Colors.white, // Opsional: untuk membuat logo putih
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -189,13 +197,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'SIMPEL',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: colorMaroonDark,
-                              letterSpacing: 0.5,
+                          ShaderMask(
+                            shaderCallback: (bounds) => themeGradient.createShader(bounds),
+                            child: const Text(
+                              'SIMPEL',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -229,13 +240,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               // Title
-                              const Text(
-                                'Selamat Datang',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: colorMaroonDark,
-                                  letterSpacing: -0.5,
+                              ShaderMask(
+                                shaderCallback: (bounds) => themeGradient.createShader(bounds),
+                                child: const Text(
+                                  'Selamat Datang',
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: -0.5,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -257,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   borderRadius: BorderRadius.circular(24),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: colorMaroon.withOpacity(0.08),
+                                      color: themeBlue.withOpacity(0.08),
                                       blurRadius: 30,
                                       offset: const Offset(0, 10),
                                     ),
@@ -278,10 +292,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                           margin: const EdgeInsets.all(12),
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: colorMaroonLight.withOpacity(0.1),
+                                            gradient: themeGradient.scale(0.1),
                                             borderRadius: BorderRadius.circular(8),
                                           ),
-                                          child: const Icon(Icons.email_outlined, size: 20, color: colorMaroon),
+                                          child: const Icon(Icons.email_outlined, size: 20, color: themeBlue),
                                         ),
                                         filled: true,
                                         fillColor: Colors.grey[50],
@@ -295,7 +309,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(16),
-                                          borderSide: const BorderSide(color: colorMaroon, width: 2),
+                                          borderSide: const BorderSide(color: themeBlue, width: 2),
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(16),
@@ -321,15 +335,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                       style: const TextStyle(fontSize: 16),
                                       decoration: InputDecoration(
                                         labelText: 'Password',
-                                        hintText: '',
+                                        hintText: '••••••••',
                                         prefixIcon: Container(
                                           margin: const EdgeInsets.all(12),
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: colorMaroonLight.withOpacity(0.1),
+                                            gradient: themeGradient.scale(0.1),
                                             borderRadius: BorderRadius.circular(8),
                                           ),
-                                          child: const Icon(Icons.lock_outline, size: 20, color: colorMaroon),
+                                          child: const Icon(Icons.lock_outline, size: 20, color: themeBlue),
                                         ),
                                         suffixIcon: IconButton(
                                           icon: Icon(
@@ -354,7 +368,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(16),
-                                          borderSide: const BorderSide(color: colorMaroon, width: 2),
+                                          borderSide: const BorderSide(color: themeBlue, width: 2),
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(16),
@@ -379,12 +393,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                         return Container(
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(16),
-                                            gradient: LinearGradient(
-                                              colors: [colorMaroon, colorMaroonDark],
-                                            ),
+                                            gradient: themeGradient,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: colorMaroon.withOpacity(0.3),
+                                                color: themeBlue.withOpacity(0.3),
                                                 blurRadius: 12,
                                                 offset: const Offset(0, 6),
                                               ),
@@ -452,20 +464,23 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     style: TextButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     ),
-                                    child: const Text(
-                                      'Daftar Sekarang',
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: colorMaroon,
-                                        fontWeight: FontWeight.bold,
-                                        decoration: TextDecoration.underline,
+                                    child: ShaderMask(
+                                      shaderCallback: (bounds) => themeGradient.createShader(bounds),
+                                      child: const Text(
+                                        'Daftar Sekarang',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          decoration: TextDecoration.underline,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
 
-                              // TEMPORARY: Seed Admin Button (Remove after testing)
+                              // Dev Only: Seed Admin Button
                               const SizedBox(height: 16),
                               TextButton(
                                 onPressed: () async {
@@ -474,17 +489,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text('Admin accounts created! Check console for credentials.'),
+                                        content: Text('Admin accounts created! Check console.'),
                                         duration: Duration(seconds: 5),
                                       ),
                                     );
                                   }
                                 },
                                 child: Text(
-                                  'Setup Admin Accounts (Dev Only)',
+                                  'Setup Admin (Dev)',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey[600],
+                                    color: Colors.grey[400],
                                     decoration: TextDecoration.underline,
                                   ),
                                 ),

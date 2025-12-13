@@ -6,6 +6,15 @@ import 'login_screen.dart';
 import '../main/dashboard_screen.dart';
 import '../admin/admin_dashboard_screen.dart';
 
+// Tambahkan tema baru di awal file
+const Color themeGreen = Color(0xFF4ADE80);
+const Color themeBlue = Color(0xFF38BDF8);
+const LinearGradient themeGradient = LinearGradient(
+  colors: [themeGreen, themeBlue],
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+);
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
@@ -170,168 +179,178 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(flex: 2),
-                
-                // Logo and Text Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Animated Logo
-                    FadeTransition(
-                      opacity: _logoFadeAnimation,
-                      child: ScaleTransition(
-                        scale: _logoScaleAnimation,
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [colorMaroon, colorMaroonDark],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFF0FDF4), // Very light green
+              Color(0xFFF8FAFC), // Light grey-blue
+              Color(0xFFECFEFF), // Very light cyan
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(flex: 2),
+                  
+                  // Logo and Text Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Animated Logo with gradient
+                      FadeTransition(
+                        opacity: _logoFadeAnimation,
+                        child: ScaleTransition(
+                          scale: _logoScaleAnimation,
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: themeGradient,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: themeBlue.withOpacity(0.3),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
                             ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorMaroon.withOpacity(0.3),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.science_rounded,
-                            size: 48,
-                            color: Colors.white,
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              width: 48,
+                              height: 48,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    
-                    const SizedBox(width: 20),
-                    
-                    // Animated Text
-                    Flexible(
-                      child: SlideTransition(
-                        position: _textSlideAnimation,
-                        child: FadeTransition(
-                          opacity: _textFadeAnimation,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'SIMPEL',
-                                style: TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.bold,
-                                  color: colorMaroonDark,
-                                  letterSpacing: 1,
-                                  height: 1.1,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Sistem Peminjaman Alat Lab',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'POLINEMA',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey[500],
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 60),
-                
-                // Animated Progress Bar
-                AnimatedBuilder(
-                  animation: _progressAnimation,
-                  builder: (context, child) {
-                    return Column(
-                      children: [
-                        Container(
-                          width: 200,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: _progressAnimation.value,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [colorMaroon, colorMaroonDark],
-                                ),
-                                borderRadius: BorderRadius.circular(2),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: colorMaroon.withOpacity(0.3),
-                                    blurRadius: 4,
+                      
+                      const SizedBox(width: 20),
+                      
+                      // Animated Text
+                      Flexible(
+                        child: SlideTransition(
+                          position: _textSlideAnimation,
+                          child: FadeTransition(
+                            opacity: _textFadeAnimation,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ShaderMask(
+                                  shaderCallback: (bounds) => themeGradient.createShader(bounds),
+                                  child: const Text(
+                                    'SIMPEL',
+                                    style: TextStyle(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: 1,
+                                      height: 1.1,
+                                    ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Sistem Peminjaman Alat Lab',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'POLINEMA',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey[500],
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Memuat aplikasi...',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[500],
-                            fontWeight: FontWeight.w500,
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 60),
+                  
+                  // Animated Progress Bar
+                  AnimatedBuilder(
+                    animation: _progressAnimation,
+                    builder: (context, child) {
+                      return Column(
+                        children: [
+                          Container(
+                            width: 200,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: _progressAnimation.value,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: themeGradient,
+                                  borderRadius: BorderRadius.circular(2),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: themeBlue.withOpacity(0.3),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Memuat aplikasi...',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[500],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  
+                  const Spacer(flex: 2),
+                  
+                  // Version Info
+                  FadeTransition(
+                    opacity: _textFadeAnimation,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: Text(
+                        'Version 1.0.0',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[400],
+                          fontWeight: FontWeight.w400,
                         ),
-                      ],
-                    );
-                  },
-                ),
-                
-                const Spacer(flex: 2),
-                
-                // Version Info
-                FadeTransition(
-                  opacity: _textFadeAnimation,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: Text(
-                      'Version 1.0.0',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey[400],
-                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

@@ -18,6 +18,16 @@ import '../../../../core/constants/lab_constants.dart';
 import '../../../../core/constants/chat_templates.dart';
 import 'add_edit_alat_screen.dart';
 
+// --- DEFINISI TEMA BARU ---
+const Color themeGreen = Color(0xFF4ADE80);
+const Color themeBlue = Color(0xFF38BDF8);
+const LinearGradient themeGradient = LinearGradient(
+  colors: [themeGreen, themeBlue],
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+);
+// --------------------------
+
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({Key? key}) : super(key: key);
 
@@ -95,95 +105,92 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Text(
           _getAppBarTitle(),
           style: const TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: colorMaroon,
-        foregroundColor: Colors.white,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: themeGradient,
+          ),
+        ),
+        backgroundColor: Colors.transparent, // Ditangani oleh flexibleSpace
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
+            icon: const Icon(Icons.logout_rounded, color: Colors.white),
             tooltip: 'Keluar',
             onPressed: () => _showLogoutDialog(context),
           ),
         ],
       ),
       floatingActionButton: _selectedIndex == 1
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                final result = await Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const AddEditAlatScreen()),
-                );
-
-                if (!mounted) return;
-
-                // Refresh list if alat was added
-                if (result == true) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Data berhasil disimpan'),
-                      backgroundColor: Colors.green,
+          ? Container(
+              decoration: BoxDecoration(
+                gradient: themeGradient,
+                borderRadius: BorderRadius.circular(16), // Kotak dengan border radius
+                boxShadow: [
+                  BoxShadow(color: themeBlue.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4)),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
+                  onTap: () async {
+                    final result = await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const AddEditAlatScreen()),
+                    );
+                    if (!mounted) return;
+                    if (result == true) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Data berhasil disimpan'), backgroundColor: Colors.green));
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded, color: Colors.white, size: 24),
+                        SizedBox(width: 8),
+                        Text('Tambah Alat', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16)),
+                      ],
                     ),
-                  );
-                }
-              },
-              backgroundColor: colorMaroon,
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text(
-                'Tambah Alat',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             )
           : null,
       body: _getSelectedContent(),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_outlined),
-            activeIcon: Icon(Icons.inventory),
-            label: 'Kelola Alat',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_outlined),
-            activeIcon: Icon(Icons.assignment),
-            label: 'Peminjaman',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: colorMaroon,
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        elevation: 8,
-        selectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 11,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
+          ],
         ),
-        unselectedLabelStyle: const TextStyle(fontSize: 11),
-        selectedFontSize: 11,
-        unselectedFontSize: 11,
+        child: BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
+            BottomNavigationBarItem(icon: Icon(Icons.inventory_2_rounded), label: 'Alat'),
+            BottomNavigationBarItem(icon: Icon(Icons.assignment_rounded), label: 'Peminjaman'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profil'),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: themeBlue,
+          unselectedItemColor: Colors.grey[400],
+          onTap: _onItemTapped,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          showUnselectedLabels: true,
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11),
+        ),
       ),
     );
   }
@@ -262,152 +269,98 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         final adminLab = authProvider.userLab ?? 'BA';
         final labName = LabConstants.getLabName(adminLab);
         final adminName = authProvider.currentUser?.name ?? 'Admin';
-
-        // Filter alat by admin's lab
-        final labAlat =
-            alatProvider.alatList.where((alat) => alat.ruang == adminLab).toList();
-
+        final labAlat = alatProvider.alatList.where((alat) => alat.ruang == adminLab).toList();
         final totalAlat = labAlat.length;
         final totalStok = labAlat.fold<int>(0, (sum, alat) => sum + alat.jumlah);
-
-        // Fix: tersedia hanya jika stok > 0
-        final alatTersedia = labAlat
-            .where((a) => a.status.toLowerCase() == 'tersedia' && a.jumlah > 0)
-            .length;
-
-        final alatDipinjam =
-            labAlat.where((a) => a.status.toLowerCase() == 'dipinjam').length;
+        final alatTersedia = labAlat.where((a) => a.status.toLowerCase() == 'tersedia' && a.jumlah > 0).length;
+        final alatDipinjam = labAlat.where((a) => a.status.toLowerCase() == 'dipinjam').length;
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Welcome Card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [colorMaroon, colorMaroonDark],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
+                  gradient: themeGradient,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(color: themeBlue.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Selamat datang, $adminName!',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      labName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70,
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        labName,
+                        style: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
-              const Text(
-                'Statistik Lab',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
+              const Text('Statistik Lab', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+              const SizedBox(height: 16),
 
               Row(
                 children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      title: 'Total Alat',
-                      value: '$totalAlat',
-                      icon: Icons.inventory,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      title: 'Total Stok',
-                      value: '$totalStok',
-                      icon: Icons.format_list_numbered,
-                      color: Colors.purple,
-                    ),
-                  ),
+                  Expanded(child: _buildStatCard(title: 'Total Alat', value: '$totalAlat', icon: Icons.inventory_2_rounded, color: Colors.blue)),
+                  const SizedBox(width: 16),
+                  Expanded(child: _buildStatCard(title: 'Total Stok', value: '$totalStok', icon: Icons.format_list_numbered_rounded, color: Colors.purple)),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
               Row(
                 children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      title: 'Tersedia',
-                      value: '$alatTersedia',
-                      icon: Icons.check_circle,
-                      color: Colors.green,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      title: 'Dipinjam',
-                      value: '$alatDipinjam',
-                      icon: Icons.pending_actions,
-                      color: Colors.orange,
-                    ),
-                  ),
+                  Expanded(child: _buildStatCard(title: 'Tersedia', value: '$alatTersedia', icon: Icons.check_circle_rounded, color: Colors.green)),
+                  const SizedBox(width: 16),
+                  Expanded(child: _buildStatCard(title: 'Dipinjam', value: '$alatDipinjam', icon: Icons.pending_actions_rounded, color: Colors.orange)),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
-              const Text(
-                'Quick Actions',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
+              const Text('Aksi Cepat', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+              const SizedBox(height: 16),
 
               Row(
                 children: [
                   Expanded(
                     child: _buildQuickAction(
                       title: 'Tambah Alat',
-                      icon: Icons.add_box,
-                      color: colorMaroon,
+                      icon: Icons.add_box_rounded,
+                      color: themeBlue,
                       onTap: () async {
-                        final result = await Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const AddEditAlatScreen(),
-                          ),
-                        );
-
+                        final result = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddEditAlatScreen()));
                         if (!mounted) return;
-
                         if (result == true) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('✅ Alat berhasil ditambahkan'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Alat berhasil ditambahkan'), backgroundColor: Colors.green));
                         }
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: _buildQuickAction(
                       title: 'Validasi',
-                      icon: Icons.approval,
-                      color: Colors.blue,
+                      icon: Icons.approval_rounded,
+                      color: themeGreen,
                       onTap: () => setState(() => _selectedIndex = 2),
                     ),
                   ),
@@ -420,79 +373,63 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-  }) {
+  Widget _buildStatCard({required String title, required String value, required IconData icon, required Color color}) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),
           ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
+          const SizedBox(height: 16),
+          Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
           const SizedBox(height: 4),
-          Text(title, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+          Text(title, style: TextStyle(fontSize: 13, color: Colors.grey[500], fontWeight: FontWeight.w500)),
         ],
       ),
     );
   }
 
-  Widget _buildQuickAction({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildQuickAction({required String title, required IconData icon, required Color color, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        height: 56,
+        height: 64,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.2)),
+          boxShadow: [
+            BoxShadow(color: color.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4)),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(width: 8),
+            Icon(icon, color: color, size: 24),
+            const SizedBox(width: 12),
             Flexible(
               child: Text(
                 title,
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: color),
               ),
             ),
           ],
@@ -508,147 +445,75 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Consumer2<AuthProvider, AlatProvider>(
       builder: (context, authProvider, alatProvider, child) {
         final adminLab = authProvider.userLab ?? 'BA';
-        final labAlat =
-            alatProvider.alatList.where((alat) => alat.ruang == adminLab).toList();
+        final labAlat = alatProvider.alatList.where((alat) => alat.ruang == adminLab).toList();
 
         if (labAlat.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.inventory_2_outlined, size: 80, color: Colors.grey[400]),
+                Icon(Icons.inventory_2_outlined, size: 80, color: Colors.grey[300]),
                 const SizedBox(height: 16),
-                const Text(
-                  'Belum ada alat',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Tambahkan alat dengan tombol + di bawah',
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
+                const Text('Belum ada alat', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
               ],
             ),
           );
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           itemCount: labAlat.length,
           itemBuilder: (context, index) {
             final alat = labAlat[index];
-            final isTersedia =
-                alat.status.toLowerCase() == 'tersedia' && alat.jumlah > 0;
+            final isTersedia = alat.status.toLowerCase() == 'tersedia' && alat.jumlah > 0;
 
             return Container(
-              margin: const EdgeInsets.only(bottom: 12),
+              margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 4)),
+                ],
               ),
               child: ListTile(
                 contentPadding: const EdgeInsets.all(16),
-                leading: alat.gambar != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          alat.gambar!,
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: isTersedia
-                                    ? colorMaroonLight.withOpacity(0.1)
-                                    : Colors.grey[100],
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.inventory,
-                                color: isTersedia ? colorMaroon : Colors.grey,
-                                size: 30,
-                              ),
-                            );
-                          },
-                        ),
-                      )
-                    : Container(
-                        width: 60,
-                        height: 60,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isTersedia
-                              ? colorMaroonLight.withOpacity(0.1)
-                              : Colors.grey[100],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          Icons.inventory,
-                          color: isTersedia ? colorMaroon : Colors.grey,
-                          size: 30,
-                        ),
-                      ),
-                title: Text(
-                  alat.nama,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: alat.gambar != null
+                      ? Image.network(alat.gambar!, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(width: 64, height: 64, color: Colors.grey[100], child: const Icon(Icons.image_not_supported, color: Colors.grey)))
+                      : Container(width: 64, height: 64, color: themeBlue.withOpacity(0.1), child: const Icon(Icons.inventory_2_rounded, color: themeBlue)),
                 ),
+                title: Text(alat.nama, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 4),
-                    Text('Stok: ${alat.jumlah} | Kategori: ${alat.kategori}'),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
+                    Text('Stok: ${alat.jumlah} | ${alat.kategori}', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                    const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: isTersedia ? Colors.green.shade50 : Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         isTersedia ? 'Tersedia' : 'Tidak Tersedia',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isTersedia ? Colors.green : Colors.red,
-                        ),
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isTersedia ? Colors.green : Colors.red),
                       ),
                     ),
                   ],
                 ),
                 trailing: PopupMenuButton(
-                  icon: Icon(Icons.more_vert, color: Colors.grey[600]),
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit, size: 20, color: colorMaroon),
-                          SizedBox(width: 8),
-                          Text('Edit'),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete, size: 20, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text('Hapus'),
-                        ],
-                      ),
-                    ),
+                  icon: Icon(Icons.more_vert_rounded, color: Colors.grey[400]),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_rounded, size: 20, color: themeBlue), SizedBox(width: 12), Text('Edit')])),
+                    const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_rounded, size: 20, color: Colors.red), SizedBox(width: 12), Text('Hapus')])),
                   ],
                   onSelected: (value) {
-                    if (value == 'edit') {
-                      _handleEdit(alat);
-                    } else if (value == 'delete') {
-                      _handleDelete(alat);
-                    }
+                    if (value == 'edit') _handleEdit(alat);
+                    else if (value == 'delete') _handleDelete(alat);
                   },
                 ),
               ),
@@ -732,10 +597,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Container(
             color: Colors.white,
             child: const TabBar(
-              labelColor: colorMaroon,
+              labelColor: themeBlue,
               unselectedLabelColor: Colors.grey,
-              indicatorColor: colorMaroon,
+              indicatorColor: themeBlue,
+              indicatorWeight: 3,
               isScrollable: true,
+              labelStyle: TextStyle(fontWeight: FontWeight.bold),
               tabs: [
                 Tab(text: 'Menunggu Konfirmasi'),
                 Tab(text: 'Sedang Dipinjam'),
@@ -1286,6 +1153,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -1299,6 +1167,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -1446,6 +1315,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
             const SizedBox(height: 8),
 
+            // Badge
             Row(
               children: [
                 const Spacer(),
@@ -1554,92 +1424,56 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         };
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      color: colorMaroonLight,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      color: Colors.white, // Changed from colorMaroonLight
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: Colors.orange.withOpacity(0.3), width: 1), // Orange border for pending
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(labStyle["icon"], color: labStyle["text"], size: 24),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    "Lab: ${history.lab}",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: labStyle["text"],
-                    ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(20),
                   ),
+                  child: Text("Menunggu Konfirmasi", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.orange.shade800)),
                 ),
+                const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.chat_bubble_outline),
-                  color: colorMaroon,
-                  tooltip: 'Chat dengan peminjam',
+                  icon: const Icon(Icons.chat_bubble_outline_rounded),
+                  color: themeBlue,
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatScreen(
-                          peminjamanId: history.id,
-                          otherUserName: userName,
-                          otherUserRole: 'user',
-                        ),
-                      ),
-                    );
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(peminjamanId: history.id, otherUserName: userName, otherUserRole: 'user')));
                   },
                 ),
               ],
             ),
             const SizedBox(height: 12),
-
-            // Info peminjam
+            // User Info
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.grey[50],
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
               ),
               child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: colorMaroon.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.person, color: colorMaroon, size: 24),
-                  ),
+                  CircleAvatar(backgroundColor: themeBlue.withOpacity(0.1), radius: 16, child: const Icon(Icons.person_rounded, color: themeBlue, size: 18)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Peminjam:',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          userName,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          userEmail,
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        Text(userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text(userEmail, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                       ],
                     ),
                   ),
@@ -1647,7 +1481,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
             const SizedBox(height: 8),
-
             // Tanggal
             SizedBox(
               width: double.infinity,
@@ -1658,19 +1491,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Tanggal Pinjam: ${DateFormat('dd-MM-yyyy').format(history.tanggalPinjam)}",
-                      ),
-                      Text(
-                        "Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(history.tanggalKembali)}",
-                      ),
+                      Text("Tanggal Pinjam: ${DateFormat('dd-MM-yyyy').format(history.tanggalPinjam)}"),
+                      Text("Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(history.tanggalKembali)}"),
                     ],
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 8),
-
             // Alasan
             SizedBox(
               width: double.infinity,
@@ -1682,84 +1510,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-
-            const Text(
-              "Alat:",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-
-            ...history.alat.map((item) {
-              final itemMap = (item as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-              final alatId = (itemMap['id'] ?? '').toString();
-              final qty = itemMap['jumlah'] ?? 0;
-
-              return FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance.collection('alat').doc(alatId).get(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Card(
-                      margin: EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        leading: SizedBox(
-                          width: 50,
-                          height: 50,
-                          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                        ),
-                        title: Text('Loading...'),
-                      ),
-                    );
-                  }
-
-                  if (!snapshot.hasData || !snapshot.data!.exists) {
-                    return const Card(
-                      margin: EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        leading: Icon(Icons.error_outline, size: 50),
-                        title: Text('Data tidak ditemukan'),
-                      ),
-                    );
-                  }
-
-                  final alatData = (snapshot.data!.data() as Map<String, dynamic>?) ?? {};
-
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      leading: alatData['gambar'] != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                alatData['gambar'],
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    const Icon(Icons.inventory, size: 50),
-                              ),
-                            )
-                          : const Icon(Icons.inventory, size: 50),
-                      title: Text(alatData['nama'] ?? 'Tanpa Nama'),
-                      subtitle: Text('Jumlah: $qty'),
-                    ),
-                  );
-                },
-              );
-            }).toList(),
-            const SizedBox(height: 16),
-
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
-                  child: ElevatedButton.icon(
+                  child: OutlinedButton.icon(
                     onPressed: () => _showTolakDialog(history.id),
-                    icon: const Icon(Icons.cancel),
+                    icon: const Icon(Icons.close_rounded),
                     label: const Text('Tolak'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
                       padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -1767,12 +1530,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _showSetujuDialogWithEdit(history),
-                    icon: const Icon(Icons.check_circle),
+                    icon: const Icon(Icons.check_rounded),
                     label: const Text('Setujui'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
+                      elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -2326,7 +2091,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       stream: FirebaseFirestore.instance
           .collection('peminjaman')
           .where('lab', isEqualTo: adminLab)
-          .where('status', whereIn: ['dikembalikan', 'ditolak'])
+          .where('status', isEqualTo: 'dikembalikan')
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -2387,7 +2152,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           );
         }
 
-        // Fix: copy list before sorting
         final docs = List<QueryDocumentSnapshot>.from(snapshot.data!.docs);
 
         docs.sort((a, b) {
@@ -2644,7 +2408,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           contentPadding: const EdgeInsets.all(8),
                           leading: alatData['gambar'] != null
                               ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: BorderRadius.circular(8),
                                   child: Image.network(
                                     alatData['gambar'],
                                     width: 40,
@@ -2680,133 +2444,66 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         final isLoading = user == null;
 
         return Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (isLoading)
-                Center(child: CircularProgressIndicator(color: colorMaroon))
-              else ...[
-                const Text(
-                  'Profil',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(shape: BoxShape.circle, gradient: themeGradient),
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Colors.white,
+                  child: Text(
+                    user?.name != null && user!.name!.isNotEmpty 
+                        ? user.name![0].toUpperCase() 
+                        : 'A',
+                    style: const TextStyle(color: themeBlue, fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Row(
+              ),
+              const SizedBox(height: 16),
+              Text(user?.name ?? 'Admin', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              Text(user?.email ?? 'admin@example.com', style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+              const SizedBox(height: 32),
+              
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                ),
+                child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: colorMaroon,
-                      child: Text(
-                        ((user?.name ?? 'A').isNotEmpty ? (user!.name![0]) : 'A'),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: themeBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.business_center_rounded, color: themeBlue)),
                     const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user?.name ?? 'Admin',
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            user?.email ?? 'admin@example.com',
-                            style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: colorMaroon,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Text(
-                              (user?.role ?? 'admin') == 'admin' ? 'Admin Lab' : 'Pengguna',
-                              style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w500),
-                            ),
-                          ),
-                        ],
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Laboratorium', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text('Lab ${user?.lab ?? 'Unknown'}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-
-                // Lab Info (FIXED: removed user?.ruang)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[200]!),
+              ),
+              const SizedBox(height: 24),
+              
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _showLogoutDialog(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade50,
+                    foregroundColor: Colors.red,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Informasi Lab',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          const Icon(Icons.business_center, color: colorMaroon, size: 28),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Lab ${user?.lab ?? 'Tidak Diketahui'}',
-                              style: const TextStyle(fontSize: 16, color: Colors.black54, fontWeight: FontWeight.w500),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  child: const Text('Keluar Aplikasi', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
-                const SizedBox(height: 24),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const EditProfileScreen()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colorMaroon,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text('Edit Profil', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => _showLogoutDialog(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text('Keluar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ],
           ),
         );
