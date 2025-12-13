@@ -701,12 +701,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 0.8,
+        childAspectRatio: 0.75,
       ),
       itemCount: alatFiltered.length,
       itemBuilder: (context, index) {
         final alat = alatFiltered[index];
-        final bool isTersedia = alat.status.toLowerCase() == 'tersedia';
+        // Fix: status tersedia hanya jika stok > 0
+        final bool isTersedia = alat.status.toLowerCase() == 'tersedia' && alat.jumlah > 0;
 
         return InkWell(
           onTap: () {
@@ -729,22 +730,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: isTersedia ? colorMaroonLight : Colors.grey[100],
+                  // Replace icon with image
+                  if (alat.gambar != null)
+                    ClipRRect(
                       borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        alat.gambar,
+                        width: double.infinity,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: double.infinity,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: isTersedia ? colorMaroonLight : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              _kategoriList[alat.kategori.toLowerCase()] ??
+                                  Icons.widgets,
+                              size: 40,
+                              color: isTersedia ? colorMaroon : Colors.grey[400],
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  else
+                    Container(
+                      width: double.infinity,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: isTersedia ? colorMaroonLight : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        _kategoriList[alat.kategori.toLowerCase()] ??
+                            Icons.widgets,
+                        size: 40,
+                        color: isTersedia ? colorMaroon : Colors.grey[400],
+                      ),
                     ),
-                    child: Icon(
-                      _kategoriList[alat.kategori.toLowerCase()] ??
-                          Icons.widgets,
-                      size: 28,
-                      color: isTersedia ? colorMaroon : Colors.grey[400],
-                    ),
-                  ),
                   const Spacer(),
-                  // Highlight hasil pencarian
                   _highlightText(alat.nama, _searchQuery, isTersedia),
                   const SizedBox(height: 4),
                   Text(
@@ -752,10 +780,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: TextStyle(
                       fontSize: 13,
                       color: isTersedia ? Colors.black54 : Colors.red,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 6),
-                  ruangChip(alat.ruang),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ruangChip(alat.ruang),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isTersedia ? Colors.green.shade50 : Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          isTersedia ? 'Tersedia' : 'Habis',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: isTersedia ? Colors.green : Colors.red,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
