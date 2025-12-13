@@ -15,12 +15,18 @@ class ChatProvider extends ChangeNotifier {
     return _firestore
         .collection('chats')
         .where('peminjamanId', isEqualTo: peminjamanId)
-        .orderBy('timestamp', descending: false)
+        // REMOVE .orderBy to avoid composite index requirement
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
+      // Sort manually in client side
+      final messages = snapshot.docs.map((doc) {
         return ChatMessage.fromMap(doc.id, doc.data());
       }).toList();
+      
+      // Sort by timestamp ascending (oldest first)
+      messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      
+      return messages;
     });
   }
 
@@ -52,22 +58,31 @@ class ChatProvider extends ChangeNotifier {
   /// Mark messages as read for current user
   Future<void> markMessagesAsRead(String peminjamanId, String currentUserId) async {
     try {
-      // FIX: Remove orderBy to avoid index requirement
+      // SIMPLIFIED: Only filter by peminjamanId, then check in-memory
       final querySnapshot = await _firestore
           .collection('chats')
           .where('peminjamanId', isEqualTo: peminjamanId)
-          .where('senderId', isNotEqualTo: currentUserId)
-          .where('isRead', isEqualTo: false)
           .get();
 
       final batch = _firestore.batch();
+      
+      // Filter in-memory to avoid complex index
       for (var doc in querySnapshot.docs) {
-        batch.update(doc.reference, {'isRead': true});
+        final data = doc.data();
+        final senderId = data['senderId'] as String?;
+        final isRead = data['isRead'] as bool?;
+        
+        // Only update if message is from other user and not read yet
+        if (senderId != currentUserId && isRead == false) {
+          batch.update(doc.reference, {'isRead': true});
+        }
       }
 
       await batch.commit();
+      print('✅ Messages marked as read successfully');
     } catch (e) {
       print('❌ Error marking messages as read: $e');
+      // Don't throw - just log, so chat still works
     }
   }
 
