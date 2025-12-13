@@ -53,7 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _searchQuery = "";
   String _kategoriTerpilih = "semua";
   String _ruangTerpilih = "semua";
-  String _statusTerpilih = "semua"; // Filter untuk riwayat
+  String _statusTerpilih = "semua";
   int _selectedIndex = 0;
 
   final Map<String, IconData> _kategoriList = {
@@ -64,7 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   };
 
   final List<String> _ruangList = ["semua", "BA", "IS", "NCS", "SE", "STUDIO"];
-  
+
   final List<String> _statusList = [
     "semua",
     "diajukan",
@@ -89,9 +89,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final userId =
           authProvider.currentUser?.id ?? authProvider.firebaseUser?.uid;
       if (userId != null) {
+        // ignore: avoid_print
         print("🔍 [DashboardScreen] Fetching history for user ID: $userId");
         historyProvider.fetchUserHistory(userId);
       } else {
+        // ignore: avoid_print
         print(
           "⚠️ [DashboardScreen] No user ID available for fetching history.",
         );
@@ -251,21 +253,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
-            Icon(Icons.check_circle_outline, color: Colors.blue),
+            Icon(Icons.assignment_return, color: colorMaroon), // CHANGED ICON
             SizedBox(width: 8),
-            Text('Konfirmasi Pengembalian'),
+            Text('Pengajuan Pengembalian'), // CHANGED TEXT
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Apakah Anda yakin ingin mengembalikan alat ini?'),
-            const SizedBox(height: 16),
+            const Text('Apakah Anda ingin mengajukan pengembalian alat ini?'), // CHANGED
+            const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: colorMaroon.withOpacity(0.1), // CHANGED COLOR
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -278,6 +280,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text(
                     'Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(history.tanggalKembali)}',
                     style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: Colors.amber.shade800),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Admin akan memvalidasi pengembalian Anda',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.amber.shade900,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -295,21 +321,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
               await _handleKembaliAlat(context, history.id);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
+              backgroundColor: colorMaroon, // CHANGED COLOR
               foregroundColor: Colors.white,
             ),
-            child: const Text('Kembalikan'),
+            child: const Text('Ajukan Pengembalian'), // CHANGED TEXT
           ),
         ],
       ),
     );
   }
 
-  Future<void> _handleKembaliAlat(BuildContext context, String peminjamanId) async {
+  Future<void> _handleKembaliAlat(
+      BuildContext context, String peminjamanId) async {
     try {
       final historyProvider = context.read<HistoryProvider>();
 
-      // Show loading dialog
       if (context.mounted) {
         showDialog(
           context: context,
@@ -323,39 +349,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 CircularProgressIndicator(color: colorMaroon),
                 const SizedBox(height: 16),
-                const Text('Memproses pengembalian...'),
+                const Text('Mengirim pengajuan...'), // CHANGED TEXT
               ],
             ),
           ),
         );
       }
 
-      // Update status ke dikembalikan
       await historyProvider.updateStatusToReturned(peminjamanId);
 
       if (context.mounted) {
-        Navigator.of(context).pop(); // Close loading dialog
-        
-        // Show success message
+        Navigator.of(context).pop();
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Row(
               children: [
                 Icon(Icons.check_circle, color: Colors.white),
                 SizedBox(width: 8),
-                Text('Alat berhasil dikembalikan!'),
+                Expanded(
+                  child: Text('Pengajuan pengembalian berhasil! Menunggu validasi admin.'), // CHANGED
+                ),
               ],
             ),
             backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
+            duration: const Duration(seconds: 4), // LONGER DURATION
           ),
         );
+
+        // Refresh history
+        final authProvider = context.read<AuthProvider>();
+        final userId = authProvider.currentUser?.id ?? authProvider.firebaseUser?.uid;
+        if (userId != null) {
+          await historyProvider.fetchUserHistory(userId);
+        }
       }
     } catch (e) {
       if (context.mounted) {
-        Navigator.of(context).pop(); // Close loading dialog
-        
-        // Show error message
+        Navigator.of(context).pop();
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -363,7 +395,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const Icon(Icons.error, color: Colors.white),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('Gagal mengembalikan alat: $e'),
+                  child: Text('Gagal mengajukan pengembalian: $e'),
                 ),
               ],
             ),
@@ -377,16 +409,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildWelcomeCard(AuthProvider authProvider) {
     final userName = authProvider.currentUser?.name ?? 'Loading...';
-    final userEmail =
-        authProvider.currentUser?.email ??
+    final userEmail = authProvider.currentUser?.email ??
         authProvider.firebaseUser?.email ??
         '';
 
     // Debug logs
+    // ignore: avoid_print
     print('=== Dashboard Welcome Card ===');
+    // ignore: avoid_print
     print('Current User Name: ${authProvider.currentUser?.name}');
+    // ignore: avoid_print
     print('Current User Email: ${authProvider.currentUser?.email}');
+    // ignore: avoid_print
     print('Firebase User Email: ${authProvider.firebaseUser?.email}');
+    // ignore: avoid_print
     print('=============================');
 
     return Container(
@@ -608,8 +644,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget ruangChip(String kode) {
-    final style =
-        ruangStyle[kode] ??
+    final style = ruangStyle[kode] ??
         {
           "color": Colors.grey[300],
           "text": Colors.black,
@@ -670,9 +705,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ? true
           : alat.ruang.toLowerCase() == _ruangTerpilih.toLowerCase();
 
-      final cocokCari = _searchQuery.isEmpty
-          ? true
-          : nama.contains(_searchQuery);
+      final cocokCari = _searchQuery.isEmpty ? true : nama.contains(_searchQuery);
 
       return cocokKategori && cocokCari && cocokRuang;
     }).toList();
@@ -707,7 +740,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       itemBuilder: (context, index) {
         final alat = alatFiltered[index];
         // Fix: status tersedia hanya jika stok > 0
-        final bool isTersedia = alat.status.toLowerCase() == 'tersedia' && alat.jumlah > 0;
+        final bool isTersedia =
+            alat.status.toLowerCase() == 'tersedia' && alat.jumlah > 0;
 
         return InkWell(
           onTap: () {
@@ -744,14 +778,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             width: double.infinity,
                             height: 80,
                             decoration: BoxDecoration(
-                              color: isTersedia ? colorMaroonLight : Colors.grey[100],
+                              color: isTersedia
+                                  ? colorMaroonLight
+                                  : Colors.grey[100],
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
                               _kategoriList[alat.kategori.toLowerCase()] ??
                                   Icons.widgets,
                               size: 40,
-                              color: isTersedia ? colorMaroon : Colors.grey[400],
+                              color:
+                                  isTersedia ? colorMaroon : Colors.grey[400],
                             ),
                           );
                         },
@@ -789,9 +826,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       ruangChip(alat.ruang),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: isTersedia ? Colors.green.shade50 : Colors.red.shade50,
+                          color: isTersedia
+                              ? Colors.green.shade50
+                              : Colors.red.shade50,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -850,7 +890,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           TextSpan(
             text: fullText.substring(0, startIndex),
-            style: TextStyle(color: Colors.black87),
+            style: const TextStyle(color: Colors.black87),
           ),
           TextSpan(
             text: fullText.substring(startIndex, endIndex),
@@ -861,7 +901,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           TextSpan(
             text: fullText.substring(endIndex),
-            style: TextStyle(color: Colors.black87),
+            style: const TextStyle(color: Colors.black87),
           ),
         ],
       ),
@@ -873,6 +913,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (context, authProvider, alatProvider, child) {
         final alatList = alatProvider.alatList;
 
+        final List<DropdownMenuItem<String>> kategoriItems = <DropdownMenuItem<String>>[
+          const DropdownMenuItem<String>(
+            value: "semua",
+            child: Text("Semua"),
+          ),
+          ..._kategoriList.entries.map((entry) {
+            final kategori = entry.key;
+            final icon = entry.value;
+            return DropdownMenuItem<String>(
+              value: kategori,
+              child: Row(
+                children: [
+                  Icon(icon, size: 18, color: colorMaroon),
+                  const SizedBox(width: 8),
+                  Text(kategori[0].toUpperCase() + kategori.substring(1)),
+                ],
+              ),
+            );
+          }).toList(),
+        ];
+
+        final List<DropdownMenuItem<String>> ruangItems = _ruangList
+            .map((ruang) => DropdownMenuItem<String>(
+                  value: ruang,
+                  child: Text(ruang.toUpperCase()),
+                ))
+            .toList();
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -882,27 +950,90 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 24),
               _buildSearchBar(),
               const SizedBox(height: 24),
-              const Text(
-                "Kategori",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+
+              // Dropdown Filters Row
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Kategori",
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _kategoriTerpilih,
+                              isExpanded: true,
+                              icon: const Icon(Icons.arrow_drop_down,
+                                  color: colorMaroon),
+                              items: kategoriItems,
+                              onChanged: (String? value) {
+                                if (value == null) return;
+                                setState(() => _kategoriTerpilih = value);
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Laboratorium",
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _ruangTerpilih,
+                              isExpanded: true,
+                              icon: const Icon(Icons.arrow_drop_down,
+                                  color: colorMaroon),
+                              items: ruangItems,
+                              onChanged: (String? value) {
+                                if (value == null) return;
+                                setState(() => _ruangTerpilih = value);
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              _buildCategoryList(),
               const SizedBox(height: 24),
-              const Text(
-                "Laboratorium",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              _buildRuangList(),
-              const SizedBox(height: 24),
+
               const Text(
                 "Daftar Alat",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               _buildFloatingButton(context),
-
               const SizedBox(height: 12),
               _buildAlatGrid(alatList),
             ],
@@ -939,7 +1070,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.person, size: 64, color: colorMaroon),
+                  child: const Icon(Icons.person, size: 64, color: colorMaroon),
                 ),
               ),
               const SizedBox(height: 24),
@@ -989,8 +1120,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      title: Row(
-                        children: const [
+                      title: const Row(
+                        children: [
                           Icon(Icons.help_outline, color: colorMaroon),
                           SizedBox(width: 8),
                           Text('Pusat Bantuan'),
@@ -1055,7 +1186,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final historyProvider = Provider.of<HistoryProvider>(context);
     final historyList = historyProvider.state;
 
-    // Filter berdasarkan status yang dipilih
     final filteredList = historyList.where((history) {
       if (_statusTerpilih == "semua") {
         return true;
@@ -1088,13 +1218,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               itemCount: filteredList.length,
               itemBuilder: (context, index) {
                 final history = filteredList[index];
-                final labStyle =
-                    ruangStyle[history.lab] ??
-                    {
-                      "color": Colors.grey[300],
-                      "text": Colors.black,
-                      "icon": Icons.location_on,
-                    };
+                final labStyle = ruangStyle[history.lab] ?? {};
 
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 8),
@@ -1185,10 +1309,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ? Colors.green
                                   : history.status.toLowerCase() == 'ditolak'
                                       ? Colors.red
-                                      : history.status.toLowerCase() ==
-                                              'dikembalikan'
+                                      : history.status.toLowerCase() == 'dikembalikan'
                                           ? Colors.blue
-                                          : Colors.orange, // menunggu persetujuan & diajukan = orange
+                                      : history.status.toLowerCase() == 'menunggu validasi pengembalian' // ADD THIS
+                                          ? Colors.orange.shade700
+                                          : Colors.orange,
                               elevation: 3,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -1197,11 +1322,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     vertical: 8, horizontal: 16),
                                 child: Text(
-                                  // Display "Diajukan" for both "menunggu persetujuan" and "diajukan"
                                   history.status.toLowerCase() == 'menunggu persetujuan'
                                       ? 'Diajukan'
-                                      : history.status[0].toUpperCase() +
-                                          history.status.substring(1),
+                                      : history.status.toLowerCase() == 'menunggu validasi pengembalian' // ADD THIS
+                                          ? 'Menunggu Validasi'
+                                          : history.status[0].toUpperCase() +
+                                              history.status.substring(1),
                                   style: const TextStyle(
                                       fontSize: 14, color: Colors.white),
                                 ),
@@ -1209,72 +1335,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          "Alat:",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...history.alat.map((item) {
-                          return FutureBuilder<DocumentSnapshot>(
-                            future: FirebaseFirestore.instance
-                                .collection('alat')
-                                .doc(item['id'])
-                                .get(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Center(
-                                    child: CircularProgressIndicator());
-                              }
-
-                              if (!snapshot.hasData || !snapshot.data!.exists) {
-                                return const Text(
-                                  "Data alat tidak ditemukan.",
-                                  style: TextStyle(color: Colors.grey),
-                                );
-                              }
-
-                              final alatData = snapshot.data!.data()
-                                  as Map<String, dynamic>;
-
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                child: ListTile(
-                                  leading: alatData['gambar'] != null
-                                      ? Image.network(
-                                          alatData['gambar'],
-                                          width: 50,
-                                          height: 50,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : const Icon(Icons.image_not_supported,
-                                          size: 50),
-                                  title: Text(
-                                    alatData['nama'] ?? 'Tanpa Nama',
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
-                                  subtitle: Text(
-                                    'Jumlah: ${item['jumlah']}',
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        }).toList(),
+                        
+                        // ...existing code for alat list...
+                        
                         const SizedBox(height: 12),
                         // Tombol Kembalikan - hanya muncul jika status = disetujui
                         if (history.status.toLowerCase() == 'disetujui')
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: () =>
-                                  _showKembaliDialog(context, history),
+                              onPressed: () => _showKembaliDialog(
+                                context,
+                                history,
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: colorMaroon,
                                 foregroundColor: Colors.white,
@@ -1287,10 +1360,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.check_circle_outline),
+                                  Icon(Icons.assignment_return), // CHANGED ICON
                                   SizedBox(width: 8),
                                   Text(
-                                    'Kembalikan Alat',
+                                    'Ajukan Pengembalian', // CHANGED TEXT
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -1298,6 +1371,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                 ],
                               ),
+                            ),
+                          ),
+                        // Info jika menunggu validasi
+                        if (history.status.toLowerCase() == 'menunggu validasi pengembalian')
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.orange.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.pending_actions, color: Colors.orange.shade700, size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Menunggu admin memvalidasi pengembalian alat',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.orange.shade900,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                       ],
@@ -1393,10 +1493,10 @@ Widget _buildFloatingButton(BuildContext context) {
       elevation: 4,
       label: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+        children: const [
           Icon(Icons.touch_app_rounded, color: Colors.white),
-          const SizedBox(width: 10),
-          const Text(
+          SizedBox(width: 10),
+          Text(
             "Ajukan Peminjaman",
             style: TextStyle(fontSize: 16, color: Colors.white),
           ),

@@ -11,6 +11,7 @@ import 'Dependency_Injection/Injection_Container.dart' as di;
 import 'features/presentation/providers/auth_provider.dart';
 import 'features/presentation/providers/user_provider.dart';
 import 'features/presentation/providers/alat_provider.dart';
+import 'features/presentation/providers/chat_provider.dart'; // Import ChatProvider
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +25,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<UserProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<AlatProvider>()),
-          ChangeNotifierProvider(create: (_) => di.sl<HistoryProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<HistoryProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<ChatProvider>()), // Register ChatProvider
       ],
       child: const MyApp(),
     ),

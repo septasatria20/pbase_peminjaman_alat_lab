@@ -22,6 +22,9 @@ import '../features/domain/repositories/alat_repository.dart';
 import '../features/data/repositories/alat_repository_impl.dart';
 import '../features/presentation/providers/alat_provider.dart';
 
+// Chat
+import '../features/presentation/providers/chat_provider.dart';
+
 final sl = GetIt.instance;
 
 void setupDependencyInjection() {
@@ -113,6 +116,12 @@ void setupDependencyInjection() {
 
     );
   });
+  // Chat Provider
+  sl.registerFactory(() {
+    print('Creating ChatProvider');
+    return ChatProvider();
+  });
+
   // Add History Use Case
   sl.registerLazySingleton(() {
     print('  ✅ Registering AddHistoryUseCase');

@@ -5,9 +5,12 @@ import 'package:intl/intl.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/alat_provider.dart';
 import '../../providers/history_provider.dart';
+import '../../providers/chat_provider.dart';
 import '../../style/color.dart';
 import '../auth/login_screen.dart';
 import '../main/edit_profile_screen.dart';
+import '../chat/chat_screen.dart';
+import 'widgets/edit_peminjaman_dialog.dart';
 import '../../../../core/constants/lab_constants.dart';
 import 'add_edit_alat_screen.dart';
 
@@ -728,7 +731,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   // TAB 3: PEMINJAMAN
   Widget _buildPeminjamanContent() {
     return DefaultTabController(
-      length: 2,
+      length: 3, // CHANGED from 2 to 3
       child: Column(
         children: [
           Container(
@@ -740,6 +743,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               tabs: [
                 Tab(text: 'Menunggu Konfirmasi'),
                 Tab(text: 'Sedang Dipinjam'),
+                Tab(text: 'Validasi Pengembalian'), // ADD THIS TAB
               ],
             ),
           ),
@@ -748,6 +752,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               children: [
                 _buildPeminjamanMenunggu(),
                 _buildPeminjamanSedangDipinjam(),
+                _buildValidasiPengembalian(), // ADD THIS
               ],
             ),
           ),
@@ -1238,6 +1243,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     color: labStyle["text"],
                   ),
                 ),
+                const Spacer(),
+                // Chat button
+                IconButton(
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  color: colorMaroon,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatScreen(
+                          peminjamanId: history.id,
+                          otherUserName: userName,
+                          otherUserRole: 'user',
+                        ),
+                      ),
+                    );
+                  },
+                  tooltip: 'Chat dengan peminjam',
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -1416,7 +1440,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => _showSetujuDialog(history.id),
+                    onPressed: () => _showSetujuDialogWithEdit(history),
                     icon: const Icon(Icons.check_circle),
                     label: const Text('Setujui'),
                     style: ElevatedButton.styleFrom(
@@ -1434,143 +1458,103 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  void _showTolakDialog(String peminjamanId) {
-    final alasanController = TextEditingController();
-
-    showDialog(
+  // New method: Show dialog with edit option
+  void _showSetujuDialogWithEdit(dynamic history) async {
+    // Show edit dialog first
+    final editedAlat = await showDialog<List<Map<String, dynamic>>>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.cancel, color: Colors.red),
-            SizedBox(width: 8),
-            Text('Tolak Peminjaman'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Masukkan alasan penolakan:'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: alasanController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Contoh: Alat sedang dalam perbaikan',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+      builder: (context) => EditPeminjamanDialog(
+        peminjamanId: history.id,
+        alatList: history.alat,
+      ),
+    );
+
+    if (editedAlat != null && mounted) {
+      // Confirm approval with edited items
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Konfirmasi Peminjaman'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Setujui peminjaman dengan item berikut?'),
+              const SizedBox(height: 12),
+              ...editedAlat.map((item) => FutureBuilder<DocumentSnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('alat')
+                    .doc(item['id'])
+                    .get(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return const SizedBox();
+                  final data = snapshot.data!.data() as Map<String, dynamic>;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      '• ${data['nama']}: ${item['jumlah']} unit',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  );
+                },
+              )).toList(),
+              const SizedBox(height: 12),
+              const Text(
+                'Stok akan dikurangi otomatis.',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Setujui'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (alasanController.text.trim().isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Alasan tidak boleh kosong'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                return;
-              }
+      );
 
-              try {
-                await FirebaseFirestore.instance
-                    .collection('peminjaman')
-                    .doc(peminjamanId)
-                    .update({
-                  'status': 'ditolak',
-                  'alasanPenolakan': alasanController.text.trim(),
-                  'updatedAt': FieldValue.serverTimestamp(),
-                });
+      if (confirm == true && mounted) {
+        try {
+          // Update peminjaman with edited alat list
+          await FirebaseFirestore.instance
+              .collection('peminjaman')
+              .doc(history.id)
+              .update({
+            'alat': editedAlat,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
 
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('✅ Peminjaman ditolak'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('❌ Error: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Tolak'),
-          ),
-        ],
-      ),
-    );
-  }
+          // Then approve
+          final historyProvider = context.read<HistoryProvider>();
+          await historyProvider.konfirmasiPeminjaman(history.id);
 
-  void _showSetujuDialog(String peminjamanId) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Konfirmasi Peminjaman'),
-        content: const Text(
-          'Apakah Anda yakin ingin menyetujui peminjaman ini?\n\n'
-          'Stok alat akan dikurangi otomatis.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Setujui'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      try {
-        final historyProvider = context.read<HistoryProvider>();
-        await historyProvider.konfirmasiPeminjaman(peminjamanId);
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✅ Peminjaman berhasil dikonfirmasi'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('❌ Gagal konfirmasi: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('✅ Peminjaman berhasil dikonfirmasi'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('❌ Gagal konfirmasi: $e'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       }
     }
@@ -1785,6 +1769,578 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         subtitle: subtitle != null ? Text(subtitle) : null,
         trailing: Icon(Icons.chevron_right, color: Colors.grey[400]),
         onTap: onTap,
+      ),
+    );
+  }
+
+  void _showTolakDialog(String peminjamanId) {
+    final alasanController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.cancel, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Tolak Peminjaman'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Masukkan alasan penolakan:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: alasanController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Contoh: Alat sedang dalam perbaikan',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (alasanController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Alasan tidak boleh kosong'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              try {
+                await FirebaseFirestore.instance
+                    .collection('peminjaman')
+                    .doc(peminjamanId)
+                    .update({
+                  'status': 'ditolak',
+                  'alasanPenolakan': alasanController.text.trim(),
+                  'updatedAt': FieldValue.serverTimestamp(),
+                });
+
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('✅ Peminjaman ditolak'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('❌ Error: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Tolak'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ADD NEW METHOD
+  Widget _buildValidasiPengembalian() {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final adminLab = authProvider.userLab ?? 'BA';
+    
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('peminjaman')
+          .where('lab', isEqualTo: adminLab)
+          .where('status', isEqualTo: 'menunggu validasi pengembalian')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: CircularProgressIndicator(color: colorMaroon),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                Text(
+                  'Error: ${snapshot.error}',
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: colorMaroonLight.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.assignment_turned_in_outlined,
+                    size: 80,
+                    color: Colors.green.withOpacity(0.5),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Tidak Ada Pengembalian',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: colorMaroonDark,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Belum ada pengembalian yang perlu divalidasi',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: snapshot.data!.docs.length,
+          itemBuilder: (context, index) {
+            final doc = snapshot.data!.docs[index];
+            final data = doc.data() as Map<String, dynamic>;
+            
+            return FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(data['userId'])
+                  .get(),
+              builder: (context, userSnapshot) {
+                String userName = 'Loading...';
+                String userEmail = '';
+                
+                if (userSnapshot.hasData && userSnapshot.data!.exists) {
+                  final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+                  userName = userData['name'] ?? 'Unknown User';
+                  userEmail = userData['email'] ?? '';
+                }
+
+                return _buildValidasiPengembalianCard(
+                  doc.id,
+                  data,
+                  userName,
+                  userEmail,
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ADD NEW METHOD
+  Widget _buildValidasiPengembalianCard(
+    String docId,
+    Map<String, dynamic> data,
+    String userName,
+    String userEmail,
+  ) {
+    final labStyle = ruangStyle[data['lab']] ?? {
+      "color": Colors.grey[300],
+      "text": Colors.black,
+      "icon": Icons.location_on,
+    };
+
+    DateTime tanggalPinjam;
+    DateTime tanggalKembali;
+
+    try {
+      if (data['tanggalPinjam'] is Timestamp) {
+        tanggalPinjam = (data['tanggalPinjam'] as Timestamp).toDate();
+      } else {
+        tanggalPinjam = DateTime.parse(data['tanggalPinjam']);
+      }
+
+      if (data['tanggalKembali'] is Timestamp) {
+        tanggalKembali = (data['tanggalKembali'] as Timestamp).toDate();
+      } else {
+        tanggalKembali = DateTime.parse(data['tanggalKembali']);
+      }
+    } catch (e) {
+      tanggalPinjam = DateTime.now();
+      tanggalKembali = DateTime.now();
+    }
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      color: Colors.orange.shade50,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(labStyle["icon"], color: labStyle["text"], size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  "Lab: ${data['lab']}",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: labStyle["text"],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Info Peminjam
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: colorMaroon.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.person, color: colorMaroon, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Peminjam:',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          userName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        Text(
+                          userEmail,
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Tanggal
+            SizedBox(
+              width: double.infinity,
+              child: Card(
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Tanggal Pinjam: ${DateFormat('dd-MM-yyyy').format(tanggalPinjam)}"),
+                      Text("Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(tanggalKembali)}"),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // List Alat
+            const Text(
+              "Alat yang dikembalikan:",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ...(data['alat'] as List).map((item) {
+              return FutureBuilder<DocumentSnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('alat')
+                    .doc(item['id'])
+                    .get(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return const SizedBox();
+                  
+                  final alatData = snapshot.data!.data() as Map<String, dynamic>;
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: ListTile(
+                      leading: alatData['gambar'] != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                alatData['gambar'],
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(Icons.inventory, size: 50);
+                                },
+                              ),
+                            )
+                          : const Icon(Icons.inventory, size: 50),
+                      title: Text(alatData['nama'] ?? 'Tanpa Nama'),
+                      subtitle: Text('Jumlah: ${item['jumlah']}'),
+                    ),
+                  );
+                },
+              );
+            }).toList(),
+            const SizedBox(height: 16),
+
+            // Tombol Validasi
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showTolakPengembalianDialog(docId),
+                    icon: const Icon(Icons.cancel),
+                    label: const Text('Tolak'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showTerimaPengembalianDialog(docId),
+                    icon: const Icon(Icons.check_circle),
+                    label: const Text('Terima'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ADD NEW METHOD
+  void _showTerimaPengembalianDialog(String peminjamanId) {
+    final notesController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 8),
+            Text('Terima Pengembalian'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Apakah semua alat sudah dikembalikan dengan lengkap?'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: notesController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Catatan (opsional)',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              
+              try {
+                final historyProvider = context.read<HistoryProvider>();
+                await historyProvider.confirmReturn(
+                  peminjamanId,
+                  notes: notesController.text.trim().isEmpty 
+                      ? null 
+                      : notesController.text.trim(),
+                );
+
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('✅ Pengembalian diterima, stok dikembalikan'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('❌ Error: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Terima'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ADD NEW METHOD
+  void _showTolakPengembalianDialog(String peminjamanId) {
+    final reasonController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.cancel, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Tolak Pengembalian'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Masukkan alasan penolakan:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: reasonController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Contoh: Alat tidak lengkap / rusak',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (reasonController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Alasan tidak boleh kosong'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              Navigator.pop(context);
+              
+              try {
+                final historyProvider = context.read<HistoryProvider>();
+                await historyProvider.rejectReturn(
+                  peminjamanId,
+                  reasonController.text.trim(),
+                );
+
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('✅ Pengembalian ditolak'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('❌ Error: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Tolak'),
+          ),
+        ],
       ),
     );
   }
