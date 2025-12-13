@@ -35,7 +35,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final userId = authProvider.currentUser?.id ?? authProvider.firebaseUser?.uid;
       
       if (userId != null) {
-        chatProvider.markAsRead(widget.peminjamanId, userId);
+        chatProvider.markMessagesAsRead(widget.peminjamanId, userId); // CHANGED METHOD NAME
       }
     });
   }

@@ -731,7 +731,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   // TAB 3: PEMINJAMAN
   Widget _buildPeminjamanContent() {
     return DefaultTabController(
-      length: 3, // CHANGED from 2 to 3
+      length: 4, // CHANGED from 3 to 4
       child: Column(
         children: [
           Container(
@@ -740,10 +740,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               labelColor: colorMaroon,
               unselectedLabelColor: Colors.grey,
               indicatorColor: colorMaroon,
+              isScrollable: true, // ADD THIS for better tab display
               tabs: [
                 Tab(text: 'Menunggu Konfirmasi'),
                 Tab(text: 'Sedang Dipinjam'),
-                Tab(text: 'Validasi Pengembalian'), // ADD THIS TAB
+                Tab(text: 'Validasi Pengembalian'),
+                Tab(text: 'Riwayat Lengkap'), // ADD THIS TAB
               ],
             ),
           ),
@@ -752,7 +754,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               children: [
                 _buildPeminjamanMenunggu(),
                 _buildPeminjamanSedangDipinjam(),
-                _buildValidasiPengembalian(), // ADD THIS
+                _buildValidasiPengembalian(),
+                _buildRiwayatLengkapAdmin(), // ADD THIS
               ],
             ),
           ),
@@ -2013,6 +2016,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header
             Row(
               children: [
                 Icon(labStyle["icon"], color: labStyle["text"], size: 24),
@@ -2341,6 +2345,399 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: const Text('Tolak'),
           ),
         ],
+      ),
+    );
+  }
+
+  // ADD NEW METHOD
+  Widget _buildRiwayatLengkapAdmin() {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final adminLab = authProvider.userLab ?? 'BA';
+    
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('peminjaman')
+          .where('lab', isEqualTo: adminLab)
+          .where('status', whereIn: ['dikembalikan', 'ditolak'])
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: CircularProgressIndicator(color: colorMaroon),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                Text(
+                  'Error: ${snapshot.error}',
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: colorMaroonLight.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.history,
+                    size: 80,
+                    color: colorMaroon.withOpacity(0.5),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Belum Ada Riwayat',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: colorMaroonDark,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Riwayat peminjaman yang selesai akan muncul di sini',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Sort by date descending
+        final docs = snapshot.data!.docs;
+        docs.sort((a, b) {
+          final aData = a.data() as Map<String, dynamic>;
+          final bData = b.data() as Map<String, dynamic>;
+          
+          final aTime = aData['updatedAt'] as Timestamp?;
+          final bTime = bData['updatedAt'] as Timestamp?;
+          
+          if (aTime == null || bTime == null) return 0;
+          return bTime.compareTo(aTime);
+        });
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: docs.length,
+          itemBuilder: (context, index) {
+            final doc = docs[index];
+            final data = doc.data() as Map<String, dynamic>;
+            
+            return FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(data['userId'])
+                  .get(),
+              builder: (context, userSnapshot) {
+                String userName = 'Loading...';
+                String userEmail = '';
+                
+                if (userSnapshot.hasData && userSnapshot.data!.exists) {
+                  final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+                  userName = userData['name'] ?? 'Unknown User';
+                  userEmail = userData['email'] ?? '';
+                }
+
+                return _buildRiwayatLengkapCard(
+                  doc.id,
+                  data,
+                  userName,
+                  userEmail,
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ADD NEW METHOD
+  Widget _buildRiwayatLengkapCard(
+    String docId,
+    Map<String, dynamic> data,
+    String userName,
+    String userEmail,
+  ) {
+    final status = data['status'] as String;
+    final isDikembalikan = status.toLowerCase() == 'dikembalikan';
+    
+    final labStyle = ruangStyle[data['lab']] ?? {
+      "color": Colors.grey[300],
+      "text": Colors.black,
+      "icon": Icons.location_on,
+    };
+
+    DateTime tanggalPinjam;
+    DateTime tanggalKembali;
+
+    try {
+      if (data['tanggalPinjam'] is Timestamp) {
+        tanggalPinjam = (data['tanggalPinjam'] as Timestamp).toDate();
+      } else {
+        tanggalPinjam = DateTime.parse(data['tanggalPinjam']);
+      }
+
+      if (data['tanggalKembali'] is Timestamp) {
+        tanggalKembali = (data['tanggalKembali'] as Timestamp).toDate();
+      } else {
+        tanggalKembali = DateTime.parse(data['tanggalKembali']);
+      }
+    } catch (e) {
+      tanggalPinjam = DateTime.now();
+      tanggalKembali = DateTime.now();
+    }
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      color: isDikembalikan ? Colors.blue.shade50 : Colors.red.shade50,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with status
+            Row(
+              children: [
+                Icon(labStyle["icon"], color: labStyle["text"], size: 24),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    "Lab: ${data['lab']}",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: labStyle["text"],
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isDikembalikan ? Colors.blue : Colors.red,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    status[0].toUpperCase() + status.substring(1),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // User info
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: colorMaroon.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.person, color: colorMaroon, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          userName,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        Text(
+                          userEmail,
+                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+ const SizedBox(height: 8),
+
+            // Dates
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Dipinjam', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                        Text(
+                          DateFormat('dd MMM yyyy').format(tanggalPinjam),
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Jatuh Tempo', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                        Text(
+                          DateFormat('dd MMM yyyy').format(tanggalKembali),
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Admin notes
+            if (isDikembalikan && data['returnNotes'] != null) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Catatan Pengembalian:',
+                      style: TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
+                    Text(
+                      data['returnNotes'],
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            if (!isDikembalikan && data['alasanPenolakan'] != null) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Alasan Penolakan:',
+                      style: TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
+                    Text(
+                      data['alasanPenolakan'],
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            // Alat list (collapsed)
+            const SizedBox(height: 12),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: const Text(
+                'Lihat Detail Alat',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+              children: [
+                ...(data['alat'] as List).map((item) {
+                  return FutureBuilder<DocumentSnapshot>(
+                    future: FirebaseFirestore.instance
+                        .collection('alat')
+                        .doc(item['id'])
+                        .get(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return const SizedBox();
+                      
+                      final alatData = snapshot.data!.data() as Map<String, dynamic>;
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(8),
+                          leading: alatData['gambar'] != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Image.network(
+                                    alatData['gambar'],
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(Icons.inventory, size: 40);
+                                    },
+                                  ),
+                                )
+                              : const Icon(Icons.inventory, size: 40),
+                          title: Text(
+                            alatData['nama'] ?? 'Tanpa Nama',
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                          subtitle: Text(
+                            'Jumlah: ${item['jumlah']}',
+                            style: const TextStyle(fontSize: 11),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }).toList(),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

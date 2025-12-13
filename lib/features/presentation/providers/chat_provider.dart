@@ -49,22 +49,23 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  // Mark messages as read
-  Future<void> markAsRead(String peminjamanId, String userId) async {
+  /// Mark messages as read for current user
+  Future<void> markMessagesAsRead(String peminjamanId, String currentUserId) async {
     try {
-      final snapshot = await _firestore
+      // FIX: Remove orderBy to avoid index requirement
+      final querySnapshot = await _firestore
           .collection('chats')
           .where('peminjamanId', isEqualTo: peminjamanId)
-          .where('senderId', isNotEqualTo: userId)
+          .where('senderId', isNotEqualTo: currentUserId)
           .where('isRead', isEqualTo: false)
           .get();
 
       final batch = _firestore.batch();
-      for (var doc in snapshot.docs) {
+      for (var doc in querySnapshot.docs) {
         batch.update(doc.reference, {'isRead': true});
       }
+
       await batch.commit();
-      print('✅ Messages marked as read');
     } catch (e) {
       print('❌ Error marking messages as read: $e');
     }
