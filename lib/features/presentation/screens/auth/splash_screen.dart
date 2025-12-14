@@ -6,15 +6,6 @@ import 'login_screen.dart';
 import '../main/dashboard_screen.dart';
 import '../admin/admin_dashboard_screen.dart';
 
-// Tambahkan tema baru di awal file
-const Color themeGreen = Color(0xFF4ADE80);
-const Color themeBlue = Color(0xFF38BDF8);
-const LinearGradient themeGradient = LinearGradient(
-  colors: [themeGreen, themeBlue],
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-);
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
@@ -165,7 +156,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         );
       }
     } catch (e, stackTrace) {
-      print('❌ Error in splash navigation: $e');
+      print('Error in splash navigation: $e');
       print('Stack trace: $stackTrace');
       
       if (mounted) {

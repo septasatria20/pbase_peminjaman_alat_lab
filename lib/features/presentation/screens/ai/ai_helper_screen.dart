@@ -129,7 +129,7 @@ Gunakan markdown untuk menampilkan hasil dengan jelas.
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CircularProgressIndicator(color: colorMaroon),
+                          CircularProgressIndicator(color: primaryColor),
                           SizedBox(height: 16),
                           Text("AI sedang berpikir..."),
                         ],
@@ -201,7 +201,7 @@ Gunakan markdown untuk menampilkan hasil dengan jelas.
                     style: ElevatedButton.styleFrom(
                       shape: const CircleBorder(),
                       padding: const EdgeInsets.all(16),
-                      backgroundColor: colorMaroon,
+                      backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
                     ),
                     child: const Icon(Icons.send),

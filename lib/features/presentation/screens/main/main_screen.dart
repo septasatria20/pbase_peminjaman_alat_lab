@@ -4,9 +4,6 @@ import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/das
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/history_screen.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/profile_screen.dart';
 
-// Tambahkan konstanta warna tema baru (bisa dipindah ke file style nanti)
-const Color themeBlue = Color(0xFF38BDF8);
-
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -33,10 +30,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _widgetOptions,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: _widgetOptions),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -66,12 +60,12 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ],
           currentIndex: _selectedIndex,
-          selectedItemColor: themeBlue, // Menggunakan warna biru muda
+          selectedItemColor: primaryColor,
           unselectedItemColor: Colors.grey[400],
           showUnselectedLabels: true,
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          elevation: 0, // Elevation dihandle oleh Container shadow
+          backgroundColor: cardColor,
+          elevation: 0,
           onTap: _onItemTapped,
         ),
       ),

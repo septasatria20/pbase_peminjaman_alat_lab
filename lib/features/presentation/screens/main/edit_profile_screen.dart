@@ -116,7 +116,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: colorMaroon,
+                        color: primaryColor,
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 4),
                         boxShadow: [
@@ -157,7 +157,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 controller: _nameController,
                 decoration: InputDecoration(
                   hintText: 'Masukkan nama lengkap',
-                  prefixIcon: const Icon(Icons.person_outline, color: colorMaroon),
+                  prefixIcon: const Icon(Icons.person_outline, color: primaryColor),
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -170,7 +170,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: colorMaroon, width: 2),
+                    borderSide: const BorderSide(color: primaryColor, width: 2),
                   ),
                 ),
                 validator: (value) {
@@ -255,7 +255,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 obscureText: _obscureCurrentPassword,
                 decoration: InputDecoration(
                   hintText: 'Masukkan password saat ini',
-                  prefixIcon: const Icon(Icons.lock_outline, color: colorMaroon),
+                  prefixIcon: const Icon(Icons.lock_outline, color: primaryColor),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureCurrentPassword
@@ -281,7 +281,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: colorMaroon, width: 2),
+                    borderSide: const BorderSide(color: primaryColor, width: 2),
                   ),
                 ),
                 validator: (value) {
@@ -313,7 +313,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 obscureText: _obscureNewPassword,
                 decoration: InputDecoration(
                   hintText: 'Masukkan password baru',
-                  prefixIcon: const Icon(Icons.lock_outline, color: colorMaroon),
+                  prefixIcon: const Icon(Icons.lock_outline, color: primaryColor),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureNewPassword
@@ -339,7 +339,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: colorMaroon, width: 2),
+                    borderSide: const BorderSide(color: primaryColor, width: 2),
                   ),
                 ),
                 validator: (value) {
@@ -376,7 +376,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 obscureText: _obscureConfirmPassword,
                 decoration: InputDecoration(
                   hintText: 'Konfirmasi password baru',
-                  prefixIcon: const Icon(Icons.lock_outline, color: colorMaroon),
+                  prefixIcon: const Icon(Icons.lock_outline, color: primaryColor),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureConfirmPassword
@@ -402,7 +402,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: colorMaroon, width: 2),
+                    borderSide: const BorderSide(color: primaryColor, width: 2),
                   ),
                 ),
                 validator: (value) {
@@ -431,7 +431,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _saveProfile,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: colorMaroon,
+                    backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

@@ -9,7 +9,7 @@ import '../../providers/history_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../style/color.dart';
 
-import '../auth/login_screen.dart';
+import '../auth/login_screen.dart' hide themeGradient;
 import '../main/edit_profile_screen.dart';
 import '../chat/chat_screen.dart';
 
@@ -17,16 +17,6 @@ import 'widgets/edit_peminjaman_dialog.dart';
 import '../../../../core/constants/lab_constants.dart';
 import '../../../../core/constants/chat_templates.dart';
 import 'add_edit_alat_screen.dart';
-
-// --- DEFINISI TEMA BARU ---
-const Color themeGreen = Color(0xFF4ADE80);
-const Color themeBlue = Color(0xFF38BDF8);
-const LinearGradient themeGradient = LinearGradient(
-  colors: [themeGreen, themeBlue],
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-);
-// --------------------------
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({Key? key}) : super(key: key);
@@ -81,7 +71,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       historyProvider.fetchHistoryKonfirmasiPeminjaman();
 
       // ignore: avoid_print
-      print('🔍 [AdminDashboard] Fetching data for lab: $adminLab');
+      print('[AdminDashboard] Fetching data for lab: $adminLab');
     });
   }
 
@@ -97,7 +87,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
         historyProvider.fetchHistoryKonfirmasiPeminjaman();
         // ignore: avoid_print
-        print('🔄 [AdminDashboard] Refreshing peminjaman data for lab: $adminLab');
+        print('[AdminDashboard] Refreshing peminjaman data for lab: $adminLab');
       }
     });
   }
@@ -135,7 +125,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 gradient: themeGradient,
                 borderRadius: BorderRadius.circular(16), // Kotak dengan border radius
                 boxShadow: [
-                  BoxShadow(color: themeBlue.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4)),
+                  BoxShadow(color: primaryColor.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4)),
                 ],
               ),
               child: Material(
@@ -182,7 +172,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profil'),
           ],
           currentIndex: _selectedIndex,
-          selectedItemColor: themeBlue,
+          selectedItemColor: primaryColor,
           unselectedItemColor: Colors.grey[400],
           onTap: _onItemTapped,
           type: BottomNavigationBarType.fixed,
@@ -250,7 +240,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: colorMaroon,
+              backgroundColor: primaryColor,
               foregroundColor: Colors.white,
             ),
             child: const Text('Keluar'),
@@ -288,7 +278,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   gradient: themeGradient,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
-                    BoxShadow(color: themeBlue.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
+                    BoxShadow(color: primaryColor.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
                   ],
                 ),
                 child: Column(
@@ -345,7 +335,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     child: _buildQuickAction(
                       title: 'Tambah Alat',
                       icon: Icons.add_box_rounded,
-                      color: themeBlue,
+                      color: primaryColor,
                       onTap: () async {
                         final result = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddEditAlatScreen()));
                         if (!mounted) return;
@@ -360,7 +350,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     child: _buildQuickAction(
                       title: 'Validasi',
                       icon: Icons.approval_rounded,
-                      color: themeGreen,
+                      color: secondaryColor,
                       onTap: () => setState(() => _selectedIndex = 2),
                     ),
                   ),
@@ -482,7 +472,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   borderRadius: BorderRadius.circular(12),
                   child: alat.gambar != null
                       ? Image.network(alat.gambar!, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(width: 64, height: 64, color: Colors.grey[100], child: const Icon(Icons.image_not_supported, color: Colors.grey)))
-                      : Container(width: 64, height: 64, color: themeBlue.withOpacity(0.1), child: const Icon(Icons.inventory_2_rounded, color: themeBlue)),
+                      : Container(width: 64, height: 64, color: primaryColor.withOpacity(0.1), child: const Icon(Icons.inventory_2_rounded, color: primaryColor)),
                 ),
                 title: Text(alat.nama, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 subtitle: Column(
@@ -508,7 +498,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   icon: Icon(Icons.more_vert_rounded, color: Colors.grey[400]),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   itemBuilder: (context) => [
-                    const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_rounded, size: 20, color: themeBlue), SizedBox(width: 12), Text('Edit')])),
+                    const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_rounded, size: 20, color: primaryColor), SizedBox(width: 12), Text('Edit')])),
                     const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_rounded, size: 20, color: Colors.red), SizedBox(width: 12), Text('Hapus')])),
                   ],
                   onSelected: (value) {
@@ -573,7 +563,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✅ Alat berhasil dihapus'),
+            content: Text('Alat berhasil dihapus'),
             backgroundColor: Colors.green,
           ),
         );
@@ -597,9 +587,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Container(
             color: Colors.white,
             child: const TabBar(
-              labelColor: themeBlue,
+              labelColor: primaryColor,
               unselectedLabelColor: Colors.grey,
-              indicatorColor: themeBlue,
+              indicatorColor: primaryColor,
               indicatorWeight: 3,
               isScrollable: true,
               labelStyle: TextStyle(fontWeight: FontWeight.bold),
@@ -643,13 +633,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: colorMaroonLight.withOpacity(0.1),
+                color: primaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.assignment_outlined,
                 size: 80,
-                color: colorMaroon.withOpacity(0.5),
+                color: primaryColor.withOpacity(0.5),
               ),
             ),
             const SizedBox(height: 24),
@@ -658,7 +648,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: colorMaroonDark,
+                color: primaryColor,
               ),
             ),
             const SizedBox(height: 8),
@@ -714,7 +704,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: colorMaroon));
+          return Center(child: CircularProgressIndicator(color: primaryColor));
         }
 
         if (snapshot.hasError) {
@@ -742,7 +732,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 Container(
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: colorMaroonLight.withOpacity(0.1),
+                    color: primaryColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -757,7 +747,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: colorMaroonDark,
+                    color: primaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -791,7 +781,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Center(child: CircularProgressIndicator(color: colorMaroon)),
+                      child: Center(child: CircularProgressIndicator(color: primaryColor)),
                     ),
                   );
                 }
@@ -812,7 +802,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   // ----------------------------
-  // TAB 3: VALIDASI PENGEMBALIAN (FIX: METHOD MISSING)
+  // TAB 3: VALIDASI PENGEMBALIAN
   // ----------------------------
   Widget _buildValidasiPengembalian() {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -826,7 +816,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: colorMaroon));
+          return Center(child: CircularProgressIndicator(color: primaryColor));
         }
 
         if (snapshot.hasError) {
@@ -869,7 +859,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: colorMaroonDark,
+                    color: primaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -965,7 +955,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.chat_bubble_outline),
-                  color: colorMaroon,
+                  color: primaryColor,
                   tooltip: 'Chat dengan peminjam',
                   onPressed: () {
                     Navigator.push(
@@ -997,10 +987,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: colorMaroon.withOpacity(0.1),
+                      color: primaryColor.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.person, color: colorMaroon, size: 22),
+                    child: const Icon(Icons.person, color: primaryColor, size: 22),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -1227,7 +1217,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.chat_bubble_outline),
-                  color: colorMaroon,
+                  color: primaryColor,
                   tooltip: 'Chat dengan peminjam',
                   onPressed: () {
                     Navigator.push(
@@ -1259,10 +1249,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: colorMaroon.withOpacity(0.1),
+                      color: primaryColor.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.person, color: colorMaroon, size: 24),
+                    child: const Icon(Icons.person, color: primaryColor, size: 24),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -1425,11 +1415,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10),
-      color: Colors.white, // Changed from colorMaroonLight
+      color: Colors.white,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.orange.withOpacity(0.3), width: 1), // Orange border for pending
+        side: BorderSide(color: Colors.orange.withOpacity(0.3), width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -1449,7 +1439,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.chat_bubble_outline_rounded),
-                  color: themeBlue,
+                  color: primaryColor,
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(peminjamanId: history.id, otherUserName: userName, otherUserRole: 'user')));
                   },
@@ -1466,7 +1456,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
               child: Row(
                 children: [
-                  CircleAvatar(backgroundColor: themeBlue.withOpacity(0.1), radius: 16, child: const Icon(Icons.person_rounded, color: themeBlue, size: 18)),
+                  CircleAvatar(backgroundColor: primaryColor.withOpacity(0.1), radius: 16, child: const Icon(Icons.person_rounded, color: primaryColor, size: 18)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -1651,7 +1641,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(color: colorMaroon),
+              CircularProgressIndicator(color: primaryColor),
               const SizedBox(height: 16),
               const Text('Memproses persetujuan...'),
             ],
@@ -1700,7 +1690,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Icon(Icons.check_circle, color: Colors.white),
               SizedBox(width: 8),
               Expanded(
-                child: Text('✅ Peminjaman disetujui & syarat dikirim ke peminjam'),
+                child: Text('Peminjaman disetujui & syarat dikirim ke peminjam'),
               ),
             ],
           ),
@@ -1715,7 +1705,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('❌ Gagal: $e'),
+          content: Text('Gagal: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -1805,7 +1795,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircularProgressIndicator(color: colorMaroon),
+                      CircularProgressIndicator(color: primaryColor),
                       const SizedBox(height: 16),
                       const Text('Memproses penolakan...'),
                     ],
@@ -1850,7 +1840,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('✅ Peminjaman ditolak & alasan dikirim ke peminjam'),
+                    content: Text('Peminjaman ditolak & alasan dikirim ke peminjam'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -1861,7 +1851,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('❌ Error: $e'),
+                    content: Text('Error: $e'),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -1949,7 +1939,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('✅ Pengembalian diterima & konfirmasi dikirim'),
+                    content: Text('Pengembalian diterima & konfirmasi dikirim'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -1957,7 +1947,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('❌ Error: $e'),
+                    content: Text('Error: $e'),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -2055,7 +2045,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('✅ Pengembalian ditolak & alasan dikirim'),
+                    content: Text('Pengembalian ditolak & alasan dikirim'),
                     backgroundColor: Colors.orange,
                   ),
                 );
@@ -2063,7 +2053,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('❌ Error: $e'),
+                    content: Text('Error: $e'),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -2095,7 +2085,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: colorMaroon));
+          return Center(child: CircularProgressIndicator(color: primaryColor));
         }
 
         if (snapshot.hasError) {
@@ -2123,13 +2113,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 Container(
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: colorMaroonLight.withOpacity(0.1),
+                    color: primaryColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.history,
                     size: 80,
-                    color: colorMaroon.withOpacity(0.5),
+                    color: primaryColor.withOpacity(0.5),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -2138,7 +2128,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: colorMaroonDark,
+                    color: primaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -2274,10 +2264,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: colorMaroon.withOpacity(0.1),
+                      color: primaryColor.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.person, color: colorMaroon, size: 20),
+                    child: const Icon(Icons.person, color: primaryColor, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -2458,7 +2448,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     user?.name != null && user!.name!.isNotEmpty 
                         ? user.name![0].toUpperCase() 
                         : 'A',
-                    style: const TextStyle(color: themeBlue, fontSize: 32, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: primaryColor, fontSize: 32, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -2476,7 +2466,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
                 child: Row(
                   children: [
-                    Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: themeBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.business_center_rounded, color: themeBlue)),
+                    Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.business_center_rounded, color: primaryColor)),
                     const SizedBox(width: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

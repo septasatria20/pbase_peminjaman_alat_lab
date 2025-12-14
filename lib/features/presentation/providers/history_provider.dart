@@ -11,7 +11,7 @@ class HistoryProvider extends ChangeNotifier {
   final KonfirmasiPeminjamanUseCase konfirmasiPeminjamanUseCase;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
-  List<HistoryEntity> _state = []; // ADD THIS LINE
+  List<HistoryEntity> _state = [];
   List<HistoryEntity> _historyKonfirmasi = [];
 
   List<HistoryEntity> get state => _state;
@@ -26,18 +26,18 @@ class HistoryProvider extends ChangeNotifier {
 
   Future<void> fetchHistoryKonfirmasiPeminjaman() async {
     try {
-      print('🔍 [HistoryProvider] Fetching history konfirmasi peminjaman...');
+      print('[HistoryProvider] Fetching history konfirmasi peminjaman...');
       
       final snapshot = await _firestore
           .collection('peminjaman')
           .where('status', isEqualTo: 'menunggu persetujuan')
           .get();
 
-      print('📊 [HistoryProvider] Found ${snapshot.docs.length} pending confirmations');
+      print('[HistoryProvider] Found ${snapshot.docs.length} pending confirmations');
 
       _historyKonfirmasi = snapshot.docs.map((doc) {
         final data = doc.data();
-        print('📝 [HistoryProvider] Processing doc: ${doc.id}');
+        print('   [HistoryProvider] Processing doc: ${doc.id}');
         print('   Lab: ${data['lab']}');
         print('   Status: ${data['status']}');
         print('   UserId: ${data['userId']}');
@@ -50,11 +50,11 @@ class HistoryProvider extends ChangeNotifier {
             try {
               return DateTime.parse(value);
             } catch (e) {
-              print('   ⚠️ Failed to parse $fieldName as String: $e');
+              print('   Failed to parse $fieldName as String: $e');
               return DateTime.now();
             }
           } else {
-            print('   ⚠️ Unknown type for $fieldName: ${value.runtimeType}');
+            print('   Unknown type for $fieldName: ${value.runtimeType}');
             return DateTime.now();
           }
         }
@@ -62,7 +62,7 @@ class HistoryProvider extends ChangeNotifier {
         final tanggalPinjam = parseDateTime(data['tanggalPinjam'], 'tanggalPinjam');
         final tanggalKembali = parseDateTime(data['tanggalKembali'], 'tanggalKembali');
         
-        print('   ✅ Dates parsed successfully');
+        print('   Dates parsed successfully');
         print('   Tanggal Pinjam: $tanggalPinjam');
         print('   Tanggal Kembali: $tanggalKembali');
         
@@ -83,10 +83,10 @@ class HistoryProvider extends ChangeNotifier {
         );
       }).toList();
 
-      print('✅ [HistoryProvider] Successfully loaded ${_historyKonfirmasi.length} items');
+      print('[HistoryProvider] Successfully loaded ${_historyKonfirmasi.length} items');
       notifyListeners();
     } catch (e, stackTrace) {
-      print('❌ [HistoryProvider] Error fetching history konfirmasi: $e');
+      print('[HistoryProvider] Error fetching history konfirmasi: $e');
       print('Stack trace: $stackTrace');
       _historyKonfirmasi = [];
       notifyListeners();
@@ -95,15 +95,14 @@ class HistoryProvider extends ChangeNotifier {
 
   Future<void> fetchUserHistory(String userId) async {
     try {
-      print('🔍 [HistoryProvider] Fetching history for user: $userId');
+      print('[HistoryProvider] Fetching history for user: $userId');
       
       final snapshot = await _firestore
           .collection('peminjaman')
           .where('userId', isEqualTo: userId)
-          // .orderBy('createdAt', descending: true) // COMMENTED OUT temporarily
           .get();
 
-      print('📊 [HistoryProvider] Found ${snapshot.docs.length} user history items');
+      print('[HistoryProvider] Found ${snapshot.docs.length} user history items');
 
       DateTime parseDateTime(dynamic value, String fieldName) {
         if (value is Timestamp) {
@@ -112,11 +111,11 @@ class HistoryProvider extends ChangeNotifier {
           try {
             return DateTime.parse(value);
           } catch (e) {
-            print('   ⚠️ Failed to parse $fieldName as String: $e');
+            print('   Failed to parse $fieldName as String: $e');
             return DateTime.now();
           }
         } else {
-          print('   ⚠️ Unknown type for $fieldName: ${value.runtimeType}');
+          print('   Unknown type for $fieldName: ${value.runtimeType}');
           return DateTime.now();
         }
       }
@@ -144,10 +143,10 @@ class HistoryProvider extends ChangeNotifier {
       // Manual sorting by createdAt descending (newest first)
       _state.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-      print('✅ [HistoryProvider] Successfully loaded ${_state.length} user history items');
+      print('[HistoryProvider] Successfully loaded ${_state.length} user history items');
       notifyListeners();
     } catch (e, stackTrace) {
-      print('❌ [HistoryProvider] Error fetching user history: $e');
+      print('[HistoryProvider] Error fetching user history: $e');
       print('Stack trace: $stackTrace');
       _state = [];
       notifyListeners();
@@ -164,7 +163,7 @@ class HistoryProvider extends ChangeNotifier {
     required String status,
   }) async {
     try {
-      print("📤 [HistoryProvider] Sending data to use case...");
+      print("[HistoryProvider] Sending data to use case...");
       print({
         "userId": userId,
         "alat": alat,
@@ -185,25 +184,25 @@ class HistoryProvider extends ChangeNotifier {
         status: status,
       );
 
-      print("✅ [HistoryProvider] Data successfully sent to use case.");
+      print("[HistoryProvider] Data successfully sent to use case.");
     } catch (e) {
-      print("❌ [HistoryProvider] Error sending data to use case: $e");
+      print("[HistoryProvider] Error sending data to use case: $e");
       rethrow;
     }
   }
 
   Future<void> konfirmasiPeminjaman(String peminjamanId) async {
     try {
-      print("📤 [HistoryProvider] Confirming peminjaman ID: $peminjamanId");
+      print("[HistoryProvider] Confirming peminjaman ID: $peminjamanId");
 
       await konfirmasiPeminjamanUseCase.call(peminjamanId);
 
       // Refresh the konfirmasi list after confirmation
       await fetchHistoryKonfirmasiPeminjaman();
 
-      print("✅ [HistoryProvider] Peminjaman confirmed successfully");
+      print("[HistoryProvider] Peminjaman confirmed successfully");
     } catch (e) {
-      print("❌ [HistoryProvider] Error confirming peminjaman: $e");
+      print("[HistoryProvider] Error confirming peminjaman: $e");
       rethrow;
     }
   }
@@ -212,20 +211,20 @@ class HistoryProvider extends ChangeNotifier {
   Future<void> updateStatusToReturned(String peminjamanId) async {
     try {
       print(
-        "📤 [HistoryProvider] Requesting return validation for peminjaman ID: $peminjamanId",
+        "[HistoryProvider] Requesting return validation for peminjaman ID: $peminjamanId",
       );
 
       await _firestore.collection('peminjaman').doc(peminjamanId).update({
-        'status': 'menunggu validasi pengembalian', // CHANGED
-        'returnRequestedAt': FieldValue.serverTimestamp(), // ADD THIS
+        'status': 'menunggu validasi pengembalian',
+        'returnRequestedAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      print("✅ [HistoryProvider] Status updated to 'menunggu validasi pengembalian'");
+      print("[HistoryProvider] Status updated to 'menunggu validasi pengembalian'");
 
       notifyListeners();
     } catch (e) {
-      print("❌ [HistoryProvider] Error updating status: $e");
+      print("[HistoryProvider] Error updating status: $e");
       rethrow;
     }
   }
@@ -233,19 +232,18 @@ class HistoryProvider extends ChangeNotifier {
   /// Fetch peminjaman yang menunggu validasi pengembalian (untuk Admin)
   Future<void> fetchPendingReturns() async {
     try {
-      print('🔍 [HistoryProvider] Fetching pending returns...');
+      print('[HistoryProvider] Fetching pending returns...');
       
       final snapshot = await _firestore
           .collection('peminjaman')
           .where('status', isEqualTo: 'menunggu validasi pengembalian')
           .get();
 
-      print('📊 [HistoryProvider] Found ${snapshot.docs.length} pending returns');
+      print('[HistoryProvider] Found ${snapshot.docs.length} pending returns');
 
-      // Bisa disimpan di variable terpisah jika diperlukan
       notifyListeners();
     } catch (e, stackTrace) {
-      print('❌ [HistoryProvider] Error fetching pending returns: $e');
+      print('[HistoryProvider] Error fetching pending returns: $e');
       print('Stack trace: $stackTrace');
     }
   }
@@ -253,7 +251,7 @@ class HistoryProvider extends ChangeNotifier {
   /// Admin konfirmasi pengembalian alat
   Future<void> confirmReturn(String peminjamanId, {String? notes}) async {
     try {
-      print("📤 [HistoryProvider] Confirming return for ID: $peminjamanId");
+      print("[HistoryProvider] Confirming return for ID: $peminjamanId");
 
       // Get peminjaman data to return stock
       final doc = await _firestore.collection('peminjaman').doc(peminjamanId).get();
@@ -278,10 +276,10 @@ class HistoryProvider extends ChangeNotifier {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      print("✅ [HistoryProvider] Return confirmed successfully");
+      print("[HistoryProvider] Return confirmed successfully");
       notifyListeners();
     } catch (e) {
-      print("❌ [HistoryProvider] Error confirming return: $e");
+      print("[HistoryProvider] Error confirming return: $e");
       rethrow;
     }
   }
@@ -289,19 +287,19 @@ class HistoryProvider extends ChangeNotifier {
   /// Admin tolak pengembalian alat
   Future<void> rejectReturn(String peminjamanId, String reason) async {
     try {
-      print("📤 [HistoryProvider] Rejecting return for ID: $peminjamanId");
+      print("[HistoryProvider] Rejecting return for ID: $peminjamanId");
 
       await _firestore.collection('peminjaman').doc(peminjamanId).update({
-        'status': 'disetujui', // Kembali ke status dipinjam
+        'status': 'disetujui',
         'returnRejectedAt': FieldValue.serverTimestamp(),
         'returnRejectionReason': reason,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      print("✅ [HistoryProvider] Return rejected successfully");
+      print("[HistoryProvider] Return rejected successfully");
       notifyListeners();
     } catch (e) {
-      print("❌ [HistoryProvider] Error rejecting return: $e");
+      print("[HistoryProvider] Error rejecting return: $e");
       rethrow;
     }
   }

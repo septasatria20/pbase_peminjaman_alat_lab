@@ -7,15 +7,6 @@ import '../main/dashboard_screen.dart';
 import '../admin/admin_dashboard_screen.dart';
 import '../../../../core/utils/seed_admin.dart';
 
-// Tambahkan tema baru
-const Color themeGreen = Color(0xFF4ADE80);
-const Color themeBlue = Color(0xFF38BDF8);
-const LinearGradient themeGradient = LinearGradient(
-  colors: [themeGreen, themeBlue],
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-);
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -78,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             MaterialPageRoute(
               builder: (_) => isAdmin 
                   ? const AdminDashboardScreen()  // Admin Dashboard
-                  : const DashboardScreen(),       // User Dashboard
+                  : const DashboardScreen(),      // User Dashboard
             ),
           );
         }
@@ -125,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               child: ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: colorMaroon,
+                  backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -188,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         'assets/images/logo.png',
                         width: 32,
                         height: 32,
-                        color: Colors.white, // Opsional: untuk membuat logo putih
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(width: 12),

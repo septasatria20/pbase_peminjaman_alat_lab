@@ -20,7 +20,7 @@ class UserRepositoryImpl implements UserRepository {
       if (!doc.exists) return null;
       return UserModel.fromJson(doc.id, doc.data()!);
     } catch (e) {
-      print('❌ Error getting user: $e');
+      print('Error getting user: $e');
       return null;
     }
   }
@@ -29,9 +29,9 @@ class UserRepositoryImpl implements UserRepository {
   Future<void> updateUser(String userId, Map<String, dynamic> data) async {
     try {
       await _firestore.collection('users').doc(userId).update(data);
-      print('✅ User updated successfully');
+      print('User updated successfully');
     } catch (e) {
-      print('❌ Error updating user: $e');
+      print('Error updating user: $e');
       rethrow;
     }
   }

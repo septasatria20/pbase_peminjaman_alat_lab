@@ -41,12 +41,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Peminjaman Lab',
       theme: ThemeData(
-        primaryColor: colorMaroon,
+        primaryColor: primaryColor,
         scaffoldBackgroundColor: Colors.grey[50],
         colorScheme: ColorScheme.fromSeed(
-          seedColor: colorMaroon,
-          primary: colorMaroon,
-          secondary: colorMaroonDark,
+          seedColor: primaryColor,
+          primary: primaryColor,
+          secondary: primaryColor.withOpacity(0.7),
         ),
         textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
         appBarTheme: AppBarTheme(
@@ -63,9 +63,9 @@ class MyApp extends StatelessWidget {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: colorMaroon, width: 2),
+            borderSide: const BorderSide(color: primaryColor, width: 2),
           ),
-          labelStyle: const TextStyle(color: colorMaroon),
+          labelStyle: const TextStyle(color: primaryColor),
         ),
       ),
       debugShowCheckedModeBanner: false,

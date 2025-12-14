@@ -13,7 +13,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
   @override
   Future<List<HistoryEntity>> getUserHistory(String userId) async {
     try {
-      print('🔍 [HistoryRepositoryImpl] Fetching history for user ID: $userId');
+      print('[HistoryRepositoryImpl] Fetching history for user ID: $userId');
 
       final snapshot = await datasource.firestore
           .collection('peminjaman')
@@ -21,11 +21,11 @@ class HistoryRepositoryImpl implements HistoryRepository {
           .get();
 
       print(
-        '📄 [HistoryRepositoryImpl] Query returned ${snapshot.docs.length} documents',
+        '[HistoryRepositoryImpl] Query returned ${snapshot.docs.length} documents',
       );
 
       final historyList = snapshot.docs.map((doc) {
-        print('📄 [HistoryRepositoryImpl] Document data: ${doc.data()}');
+        print('[HistoryRepositoryImpl] Document data: ${doc.data()}');
         return HistoryEntity(
           id: doc.id,
           userId: doc['userId'] ?? '',
@@ -45,11 +45,11 @@ class HistoryRepositoryImpl implements HistoryRepository {
       }).toList();
 
       print(
-        '✅ [HistoryRepositoryImpl] History fetched successfully: $historyList',
+        '[HistoryRepositoryImpl] History fetched successfully: $historyList',
       );
       return historyList;
     } catch (e) {
-      print('❌ [HistoryRepositoryImpl] Error fetching history: $e');
+      print('[HistoryRepositoryImpl] Error fetching history: $e');
       rethrow;
     }
   }
@@ -65,7 +65,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
     required String alasan,
   }) async {
     try {
-      print("📤 [HistoryRepositoryImpl] Sending data to datasource...");
+      print("[HistoryRepositoryImpl] Sending data to datasource...");
       print({
         "userId": userId,
         "alat": alat,
@@ -86,9 +86,9 @@ class HistoryRepositoryImpl implements HistoryRepository {
         alasan: alasan,
       );
 
-      print("✅ [HistoryRepositoryImpl] Data successfully sent to datasource.");
+      print("[HistoryRepositoryImpl] Data successfully sent to datasource.");
     } catch (e) {
-      print("❌ [HistoryRepositoryImpl] Error sending data to datasource: $e");
+      print("[HistoryRepositoryImpl] Error sending data to datasource: $e");
       rethrow;
     }
   }
@@ -96,7 +96,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
   @override
   Future<List<HistoryEntity>> getHistoryKonfirmasiPeminjaman() async {
     try {
-      print('🔍 [HistoryRepositoryImpl] Fetching history for confirmation');
+      print('[HistoryRepositoryImpl] Fetching history for confirmation');
 
       final snapshot = await datasource.firestore
           .collection('peminjaman')
@@ -104,11 +104,11 @@ class HistoryRepositoryImpl implements HistoryRepository {
           .get();
 
       print(
-        '📄 [HistoryRepositoryImpl] Query returned ${snapshot.docs.length} documents',
+        '[HistoryRepositoryImpl] Query returned ${snapshot.docs.length} documents',
       );
 
       final historyList = snapshot.docs.map((doc) {
-        print('📄 [HistoryRepositoryImpl] Document data: ${doc.data()}');
+        print('[HistoryRepositoryImpl] Document data: ${doc.data()}');
         return HistoryEntity(
           id: doc.id,
           userId: doc['userId'] ?? '',
@@ -128,11 +128,11 @@ class HistoryRepositoryImpl implements HistoryRepository {
       }).toList();
 
       print(
-        '✅ [HistoryRepositoryImpl] History konfirmasi fetched successfully: $historyList',
+        '[HistoryRepositoryImpl] History konfirmasi fetched successfully: $historyList',
       );
       return historyList;
     } catch (e) {
-      print('❌ [HistoryRepositoryImpl] Error fetching history konfirmasi: $e');
+      print('[HistoryRepositoryImpl] Error fetching history konfirmasi: $e');
       rethrow;
     }
   }
@@ -141,14 +141,14 @@ class HistoryRepositoryImpl implements HistoryRepository {
   Future<void> konfirmasiPeminjaman(String peminjamanId) async {
     try {
       print(
-        "📤 [HistoryRepositoryImpl] Konfirmasi peminjaman ID: $peminjamanId",
+        "[HistoryRepositoryImpl] Konfirmasi peminjaman ID: $peminjamanId",
       );
 
       await datasource.konfirmasiPeminjaman(peminjamanId);
 
-      print("✅ [HistoryRepositoryImpl] Peminjaman confirmed successfully");
+      print("[HistoryRepositoryImpl] Peminjaman confirmed successfully");
     } catch (e) {
-      print("❌ [HistoryRepositoryImpl] Error konfirmasi peminjaman: $e");
+      print("[HistoryRepositoryImpl] Error konfirmasi peminjaman: $e");
       rethrow;
     }
   }

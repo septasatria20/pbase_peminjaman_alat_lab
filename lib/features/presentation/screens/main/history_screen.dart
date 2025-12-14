@@ -4,15 +4,6 @@ import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/auth_p
 import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/history_provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
 
-// Tambahkan tema baru
-const Color themeGreen = Color(0xFF4ADE80);
-const Color themeBlue = Color(0xFF38BDF8);
-const LinearGradient themeGradient = LinearGradient(
-  colors: [themeGreen, themeBlue],
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-);
-
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
@@ -27,7 +18,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     Future.microtask(() {
       final authProvider = context.read<AuthProvider>();
       final historyProvider = context.read<HistoryProvider>();
-      final userId = authProvider.currentUser?.id ?? authProvider.firebaseUser?.uid;
+      final userId =
+          authProvider.currentUser?.id ?? authProvider.firebaseUser?.uid;
+
       if (userId != null) {
         historyProvider.fetchUserHistory(userId);
       }
@@ -37,11 +30,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: const Text(
           'Riwayat Peminjaman',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         flexibleSpace: Container(
           decoration: const BoxDecoration(gradient: themeGradient),
@@ -50,7 +43,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         elevation: 0,
       ),
       body: Consumer<HistoryProvider>(
-        builder: (context, historyProvider, child) {
+        builder: (context, historyProvider, _) {
           final historyList = historyProvider.state;
 
           if (historyList.isEmpty) {
@@ -73,13 +66,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   const SizedBox(height: 24),
                   const Text(
                     'Belum Ada Riwayat',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Riwayat peminjaman akan muncul di sini',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(color: textSecondary),
                   ),
                 ],
               ),
@@ -95,27 +92,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
               Color statusColor;
               String statusText;
+
               if (statusLower == 'disetujui') {
-                statusColor = Colors.green;
+                statusColor = successColor;
                 statusText = 'Disetujui';
               } else if (statusLower == 'ditolak') {
-                statusColor = Colors.red;
+                statusColor = errorColor;
                 statusText = 'Ditolak';
               } else if (statusLower == 'dikembalikan') {
                 statusColor = themeBlue;
                 statusText = 'Selesai';
-              } else if (statusLower == 'menunggu validasi pengembalian') {
-                statusColor = Colors.orange;
-                statusText = 'Validasi Kembali';
               } else {
-                statusColor = Colors.orange;
+                statusColor = warningColor;
                 statusText = 'Diajukan';
               }
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cardColor,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -135,23 +130,36 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         children: [
                           Text(
                             'Lab ${history.lab}',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: statusColor.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               statusText,
-                              style: TextStyle(fontSize: 12, color: statusColor, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: statusColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
                       ),
                       const Divider(height: 32),
-                      Text('Alasan: ${history.alasan}', style: TextStyle(color: Colors.grey[700])),
+                      Text(
+                        'Alasan: ${history.alasan}',
+                        style: TextStyle(color: textSecondary),
+                      ),
                     ],
                   ),
                 ),

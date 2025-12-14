@@ -35,7 +35,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final userId = authProvider.currentUser?.id ?? authProvider.firebaseUser?.uid;
       
       if (userId != null) {
-        chatProvider.markMessagesAsRead(widget.peminjamanId, userId); // CHANGED METHOD NAME
+        chatProvider.markMessagesAsRead(widget.peminjamanId, userId);
       }
     });
   }
@@ -109,7 +109,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
-        backgroundColor: colorMaroon,
+        backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         elevation: 1,
       ),
@@ -122,7 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
-                    child: CircularProgressIndicator(color: colorMaroon),
+                    child: CircularProgressIndicator(color: primaryColor),
                   );
                 }
 
@@ -223,7 +223,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [colorMaroon, colorMaroonDark],
+                      colors: [primaryColor, primaryColor.withOpacity(0.7)],
                     ),
                     shape: BoxShape.circle,
                   ),
@@ -273,11 +273,11 @@ class _ChatScreenState extends State<ChatScreen> {
           if (!isMe) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: colorMaroon.withOpacity(0.1),
+              backgroundColor: primaryColor.withOpacity(0.1),
               child: Icon(
                 message.senderRole == 'admin' ? Icons.admin_panel_settings : Icons.person,
                 size: 18,
-                color: colorMaroon,
+                color: primaryColor,
               ),
             ),
             const SizedBox(width: 8),
@@ -303,7 +303,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   decoration: BoxDecoration(
                     gradient: isMe
                         ? LinearGradient(
-                            colors: [colorMaroon, colorMaroonDark],
+                            colors: [primaryColor, primaryColor.withOpacity(0.7)],
                           )
                         : null,
                     color: isMe ? null : Colors.grey[200],

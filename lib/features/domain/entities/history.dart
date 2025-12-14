@@ -21,7 +21,6 @@ class HistoryEntity {
     required this.createdAt,
   });
 
-  /// Create a copy of this entity with optional parameter overrides
   HistoryEntity copyWith({
     String? id,
     String? userId,

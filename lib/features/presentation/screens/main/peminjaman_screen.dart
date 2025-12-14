@@ -8,15 +8,6 @@ import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/auth_p
 import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/history_provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
 
-// Tambahkan tema baru
-const Color themeGreen = Color(0xFF4ADE80);
-const Color themeBlue = Color(0xFF38BDF8);
-const LinearGradient themeGradient = LinearGradient(
-  colors: [themeGreen, themeBlue],
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-);
-
 class PeminjamanScreen extends StatefulWidget {
   const PeminjamanScreen({super.key});
 
@@ -66,9 +57,9 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(primary: colorMaroon),
-          ),
+          data: Theme.of(
+            context,
+          ).copyWith(colorScheme: ColorScheme.light(primary: primaryColor)),
           child: child!,
         );
       },
@@ -91,9 +82,9 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
       lastDate: _tanggalPinjam.add(const Duration(days: 30)),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(primary: colorMaroon),
-          ),
+          data: Theme.of(
+            context,
+          ).copyWith(colorScheme: ColorScheme.light(primary: primaryColor)),
           child: child!,
         );
       },
@@ -108,7 +99,7 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
       if (_selectedItems.containsKey(alatId)) {
         _selectedItems.remove(alatId);
       } else {
-        _selectedItems[alatId] = 1; // Default quantity = 1
+        _selectedItems[alatId] = 1;
       }
     });
   }
@@ -123,21 +114,15 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
 
   Future<void> _submitPeminjaman() async {
     if (_selectedItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pilih minimal 1 alat'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Pilih minimal 1 alat')));
       return;
     }
 
     if (_alasanController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Alasan tidak boleh kosong'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('Alasan tidak boleh kosong')),
       );
       return;
     }
@@ -146,14 +131,13 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
 
     try {
       final authProvider = context.read<AuthProvider>();
-      final userId = authProvider.currentUser?.id ?? authProvider.firebaseUser?.uid;
+      final userId =
+          authProvider.currentUser?.id ?? authProvider.firebaseUser?.uid;
 
-      if (userId == null) {
-        throw Exception('User not found');
-      }
+      if (userId == null) throw Exception('User not found');
 
       final alatList = _selectedItems.entries
-          .map((entry) => {'id': entry.key, 'jumlah': entry.value})
+          .map((e) => {'id': e.key, 'jumlah': e.value})
           .toList();
 
       await FirebaseFirestore.instance.collection('peminjaman').add({
@@ -168,53 +152,35 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
       });
 
       if (mounted) {
-        final historyProvider = context.read<HistoryProvider>();
-        await historyProvider.fetchUserHistory(userId);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Peminjaman berhasil diajukan'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        context.read<HistoryProvider>().fetchUserHistory(userId);
         Navigator.of(context).pop();
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Pilih Alat', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('Pilih Alat'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(gradient: themeGradient),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Consumer2<AuthProvider, AlatProvider>(
         builder: (context, authProvider, alatProvider, child) {
           final alatList = alatProvider.alatList;
 
           final alatFiltered = alatList.where((alat) {
-            final cocokRuang = alat.ruang.toLowerCase() == _ruangTerpilih.toLowerCase();
-            final cocokKategori = _kategoriTerpilih == "semua" ||
+            final cocokRuang =
+                alat.ruang.toLowerCase() == _ruangTerpilih.toLowerCase();
+            final cocokKategori =
+                _kategoriTerpilih == "semua" ||
                 alat.kategori.toLowerCase() == _kategoriTerpilih.toLowerCase();
             return cocokRuang && cocokKategori && alat.jumlah > 0;
           }).toList();
@@ -267,11 +233,17 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                               ),
                             ),
                             items: [
-                              const DropdownMenuItem(value: "semua", child: Text("Semua")),
+                              const DropdownMenuItem(
+                                value: "semua",
+                                child: Text("Semua"),
+                              ),
                               ..._kategoriList.keys.map((kategori) {
                                 return DropdownMenuItem(
                                   value: kategori,
-                                  child: Text(kategori[0].toUpperCase() + kategori.substring(1)),
+                                  child: Text(
+                                    kategori[0].toUpperCase() +
+                                        kategori.substring(1),
+                                  ),
                                 );
                               }).toList(),
                             ],
@@ -292,7 +264,11 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.shopping_cart, color: themeBlue, size: 20),
+                            const Icon(
+                              Icons.shopping_cart,
+                              color: themeBlue,
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               '${_selectedItems.length} alat dipilih',
@@ -315,16 +291,19 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                     ? const Center(child: Text('Tidak ada alat tersedia'))
                     : GridView.builder(
                         padding: const EdgeInsets.all(16),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.75,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 0.75,
+                            ),
                         itemCount: alatFiltered.length,
                         itemBuilder: (context, index) {
                           final alat = alatFiltered[index];
-                          final isSelected = _selectedItems.containsKey(alat.id);
+                          final isSelected = _selectedItems.containsKey(
+                            alat.id,
+                          );
                           final quantity = _selectedItems[alat.id] ?? 0;
 
                           return InkWell(
@@ -335,11 +314,15 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 side: BorderSide(
-                                  color: isSelected ? themeBlue : Colors.grey[200]!,
+                                  color: isSelected
+                                      ? themeBlue
+                                      : Colors.grey[200]!,
                                   width: isSelected ? 2 : 1,
                                 ),
                               ),
-                              color: isSelected ? themeBlue.withOpacity(0.05) : Colors.white,
+                              color: isSelected
+                                  ? themeBlue.withOpacity(0.05)
+                                  : Colors.white,
                               child: Padding(
                                 padding: const EdgeInsets.all(12.0),
                                 child: Column(
@@ -353,21 +336,26 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                           width: double.infinity,
                                           height: 80,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Container(
-                                              width: double.infinity,
-                                              height: 80,
-                                              decoration: BoxDecoration(
-                                                gradient: themeGradient.scale(0.2),
-                                                borderRadius: BorderRadius.circular(10),
-                                              ),
-                                              child: const Icon(
-                                                Icons.inventory,
-                                                size: 40,
-                                                color: themeBlue,
-                                              ),
-                                            );
-                                          },
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Container(
+                                                  width: double.infinity,
+                                                  height: 80,
+                                                  decoration: BoxDecoration(
+                                                    gradient: themeGradient
+                                                        .scale(0.2),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          10,
+                                                        ),
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.inventory,
+                                                    size: 40,
+                                                    color: themeBlue,
+                                                  ),
+                                                );
+                                              },
                                         ),
                                       )
                                     else
@@ -376,7 +364,9 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                         height: 80,
                                         decoration: BoxDecoration(
                                           gradient: themeGradient.scale(0.2),
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
                                         ),
                                         child: const Icon(
                                           Icons.inventory,
@@ -402,14 +392,21 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                     if (isSelected) ...[
                                       const SizedBox(height: 8),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           IconButton(
-                                            icon: const Icon(Icons.remove_circle),
+                                            icon: const Icon(
+                                              Icons.remove_circle,
+                                            ),
                                             color: themeBlue,
                                             iconSize: 24,
                                             onPressed: quantity > 1
-                                                ? () => _updateQuantity(alat.id, quantity - 1, alat.jumlah)
+                                                ? () => _updateQuantity(
+                                                    alat.id,
+                                                    quantity - 1,
+                                                    alat.jumlah,
+                                                  )
                                                 : null,
                                           ),
                                           Container(
@@ -419,7 +416,8 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                             ),
                                             decoration: BoxDecoration(
                                               gradient: themeGradient,
-                                              borderRadius: BorderRadius.circular(8),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
                                             ),
                                             child: Text(
                                               '$quantity',
@@ -434,7 +432,11 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                             color: themeBlue,
                                             iconSize: 24,
                                             onPressed: quantity < alat.jumlah
-                                                ? () => _updateQuantity(alat.id, quantity + 1, alat.jumlah)
+                                                ? () => _updateQuantity(
+                                                    alat.id,
+                                                    quantity + 1,
+                                                    alat.jumlah,
+                                                  )
                                                 : null,
                                           ),
                                         ],
@@ -443,17 +445,25 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                       const SizedBox(height: 8),
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 6,
+                                      ),
                                       decoration: BoxDecoration(
-                                        gradient: isSelected ? themeGradient : null,
-                                        color: isSelected ? null : Colors.grey[200],
+                                        gradient: isSelected
+                                            ? themeGradient
+                                            : null,
+                                        color: isSelected
+                                            ? null
+                                            : Colors.grey[200],
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Center(
                                         child: Text(
                                           isSelected ? 'Dipilih' : 'Pilih',
                                           style: TextStyle(
-                                            color: isSelected ? Colors.white : Colors.black87,
+                                            color: isSelected
+                                                ? Colors.white
+                                                : Colors.black87,
                                             fontWeight: FontWeight.bold,
                                             fontSize: 12,
                                           ),
@@ -493,10 +503,17 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                               onPressed: () async {
                                 await _selectTanggalPinjam(context);
                               },
-                              icon: const Icon(Icons.calendar_today, size: 18, color: themeBlue),
+                              icon: const Icon(
+                                Icons.calendar_today,
+                                size: 18,
+                                color: themeBlue,
+                              ),
                               label: Text(
                                 DateFormat('dd/MM/yy').format(_tanggalPinjam),
-                                style: const TextStyle(fontSize: 12, color: themeBlue),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: themeBlue,
+                                ),
                               ),
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(color: themeBlue),
@@ -509,10 +526,17 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                               onPressed: () async {
                                 await _selectTanggalKembali(context);
                               },
-                              icon: const Icon(Icons.event, size: 18, color: themeBlue),
+                              icon: const Icon(
+                                Icons.event,
+                                size: 18,
+                                color: themeBlue,
+                              ),
                               label: Text(
                                 DateFormat('dd/MM/yy').format(_tanggalKembali),
-                                style: const TextStyle(fontSize: 12, color: themeBlue),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: themeBlue,
+                                ),
                               ),
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(color: themeBlue),
@@ -534,7 +558,10 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: themeBlue, width: 2),
+                            borderSide: const BorderSide(
+                              color: themeBlue,
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
@@ -563,7 +590,9 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                             ),
                           ),
                           child: _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
                               : const Text(
                                   'Ajukan Peminjaman',
                                   style: TextStyle(

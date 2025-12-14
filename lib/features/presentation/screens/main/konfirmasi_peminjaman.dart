@@ -63,42 +63,35 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
       final tanggalKembali = DateFormat(
         "dd-MM-yyyy",
       ).parse(_tglKembaliController.text);
-      final alasan = _alasanController.text;
-      final lab = widget.activeRoom;
-      final status = "menunggu persetujuan";
 
-      print("📤 Sending data to provider...");
       await Provider.of<HistoryProvider>(context, listen: false).addHistory(
         userId: userId,
         alat: alat,
-        lab: lab,
+        lab: widget.activeRoom,
         tanggalPinjam: tanggalPinjam,
         tanggalKembali: tanggalKembali,
-        alasan: alasan,
-        status: status,
+        alasan: _alasanController.text,
+        status: "menunggu persetujuan",
       );
 
-      print("✅ Data successfully sent to provider.");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Pengajuan peminjaman terkirim!"),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: const Text("Pengajuan peminjaman terkirim!"),
+          backgroundColor: successColor,
         ),
       );
 
       Navigator.of(context).pop();
     } catch (e) {
-      print("❌ Error sending data to provider: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Gagal mengajukan peminjaman: $e"),
-          backgroundColor: Colors.red,
+          backgroundColor: errorColor,
         ),
       );
     }
   }
 
-  // LOGIC SAMA SEPERTI KODE PERTAMA
   bool _isEnabledDay(DateTime day, DateTime firstDate) {
     return !day.isBefore(firstDate.subtract(const Duration(days: 1)));
   }
@@ -108,7 +101,7 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
 
     return await showModalBottomSheet<DateTime>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -123,20 +116,15 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
                     child: SizedBox(
                       width: MediaQuery.of(context).size.width * 0.9,
                       child: FloatingActionButton.extended(
-                        onPressed: () {
-                          Navigator.of(context).pop(selected);
-                        },
-                        backgroundColor: colorMaroon,
+                        onPressed: () => Navigator.of(context).pop(selected),
+                        backgroundColor: primaryColor,
                         elevation: 4,
-                        label: Row(
+                        label: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
-                              Icons.touch_app_rounded,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 10),
-                            const Text(
+                            Icon(Icons.touch_app_rounded, color: Colors.white),
+                            SizedBox(width: 10),
+                            Text(
                               "Pilih Tanggal",
                               style: TextStyle(
                                 fontSize: 16,
@@ -149,40 +137,34 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
                     ),
                   ),
 
-                  // CALENDAR
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.6,
                     child: TableCalendar(
                       firstDay: firstDate,
                       lastDay: DateTime(2100),
                       focusedDay: selected ?? firstDate,
-                      selectedDayPredicate: (day) {
-                        return selected != null &&
-                            day.year == selected!.year &&
-                            day.month == selected!.month &&
-                            day.day == selected!.day;
-                      },
+                      selectedDayPredicate: (day) =>
+                          selected != null &&
+                          day.year == selected!.year &&
+                          day.month == selected!.month &&
+                          day.day == selected!.day,
                       onDaySelected: (day, _) {
                         if (!_isEnabledDay(day, firstDate)) return;
                         setState(() => selected = day);
                       },
-
-                      // LOGIC ENABLE = SAMA PERSIS DENGAN FILE PERTAMA
-                      enabledDayPredicate: (day) {
-                        return _isEnabledDay(day, firstDate);
-                      },
-
-                      calendarStyle: const CalendarStyle(
-                        todayDecoration: BoxDecoration(
+                      enabledDayPredicate: (day) =>
+                          _isEnabledDay(day, firstDate),
+                      calendarStyle: CalendarStyle(
+                        todayDecoration: const BoxDecoration(
                           color: Colors.transparent,
                           shape: BoxShape.circle,
                         ),
                         selectedDecoration: BoxDecoration(
-                          color: colorMaroon,
+                          color: primaryColor,
                           shape: BoxShape.circle,
                         ),
-                        disabledTextStyle: TextStyle(color: Colors.grey),
-                        weekendTextStyle: TextStyle(color: Colors.black),
+                        disabledTextStyle: TextStyle(color: textSecondary),
+                        weekendTextStyle: TextStyle(color: textPrimary),
                       ),
                     ),
                   ),
@@ -198,9 +180,11 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: const Text("Formulir Peminjaman"),
-        backgroundColor: Colors.white,
+        backgroundColor: cardColor,
+        foregroundColor: textPrimary,
         elevation: 1,
       ),
       body: SingleChildScrollView(
@@ -214,7 +198,6 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
             ),
             const SizedBox(height: 24),
 
-            // DAFTAR ITEM TERPILIH
             ...widget.selectedItems.entries.map((entry) {
               return FutureBuilder<DocumentSnapshot>(
                 future: FirebaseFirestore.instance
@@ -229,7 +212,7 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
                   if (!snapshot.hasData || !snapshot.data!.exists) {
                     return const Text(
                       "Data alat tidak ditemukan.",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: textSecondary),
                     );
                   }
 
@@ -237,6 +220,7 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 16),
+                    color: cardColor,
                     child: ListTile(
                       leading: Image.network(
                         data['gambar'] ?? '',
@@ -256,7 +240,6 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
 
             const SizedBox(height: 24),
 
-            // TANGGAL PINJAM
             TextFormField(
               controller: _tglPinjamController,
               readOnly: true,
@@ -265,9 +248,7 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
                 prefixIcon: Icon(Icons.calendar_today_outlined),
               ),
               onTap: () async {
-                final today = DateTime.now();
-                final selectedDate = await _openCalendar(today);
-
+                final selectedDate = await _openCalendar(DateTime.now());
                 if (selectedDate != null) {
                   setState(() {
                     _tglPinjamController.text =
@@ -279,7 +260,6 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
 
             const SizedBox(height: 16),
 
-            // TANGGAL KEMBALI
             TextFormField(
               controller: _tglKembaliController,
               readOnly: true,
@@ -291,11 +271,9 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
                 final pinjamDate = DateFormat(
                   "dd-MM-yyyy",
                 ).parse(_tglPinjamController.text);
-
                 final selectedDate = await _openCalendar(
                   pinjamDate.add(const Duration(days: 1)),
                 );
-
                 if (selectedDate != null) {
                   setState(() {
                     _tglKembaliController.text =
@@ -307,7 +285,6 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
 
             const SizedBox(height: 16),
 
-            // ALASAN
             TextFormField(
               controller: _alasanController,
               maxLines: 3,
@@ -323,6 +300,10 @@ class _FormPeminjamanScreenState extends State<FormPeminjamanScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _ajukanPeminjaman,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                ),
                 child: const Text('Ajukan Peminjaman'),
               ),
             ),

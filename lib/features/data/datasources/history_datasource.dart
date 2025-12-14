@@ -54,7 +54,7 @@ class HistoryDatasource {
     required String alasan,
   }) async {
     try {
-      print("📤 [HistoryDatasource] Sending data to Firestore...");
+      print("[HistoryDatasource] Sending data to Firestore...");
       print({
         "userId": userId,
         "alat": alat,
@@ -78,16 +78,16 @@ class HistoryDatasource {
         "alasan": alasan,
       });
 
-      print("✅ [HistoryDatasource] Data successfully sent to Firestore.");
+      print("[HistoryDatasource] Data successfully sent to Firestore.");
     } catch (e) {
-      print("❌ [HistoryDatasource] Error sending data to Firestore: $e");
+      print("[HistoryDatasource] Error sending data to Firestore: $e");
       rethrow;
     }
   }
 
   Future<void> konfirmasiPeminjaman(String peminjamanId) async {
     try {
-      print("📤 [HistoryDatasource] Konfirmasi peminjaman ID: $peminjamanId");
+      print("[HistoryDatasource] Konfirmasi peminjaman ID: $peminjamanId");
 
       // Get peminjaman document
       final peminjamanDoc = await firestore
@@ -108,7 +108,7 @@ class HistoryDatasource {
         "status": "disetujui",
       });
 
-      print("✅ [HistoryDatasource] Status updated to 'disetujui'");
+      print("[HistoryDatasource] Status updated to 'disetujui'");
 
       // Update alat quantities
       final batch = firestore.batch();
@@ -118,7 +118,7 @@ class HistoryDatasource {
         final jumlahPinjam = alat['jumlah'] as int;
 
         print(
-          "📦 [HistoryDatasource] Reducing alat ID: $alatId by $jumlahPinjam",
+          "[HistoryDatasource] Reducing alat ID: $alatId by $jumlahPinjam",
         );
 
         final alatRef = firestore.collection("alat").doc(alatId);
@@ -137,9 +137,9 @@ class HistoryDatasource {
       }
 
       await batch.commit();
-      print("✅ [HistoryDatasource] Alat quantities updated successfully");
+      print("[HistoryDatasource] Alat quantities updated successfully");
     } catch (e) {
-      print("❌ [HistoryDatasource] Error konfirmasi peminjaman: $e");
+      print("[HistoryDatasource] Error konfirmasi peminjaman: $e");
       rethrow;
     }
   }

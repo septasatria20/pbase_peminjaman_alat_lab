@@ -27,7 +27,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isAuthenticated => _firebaseUser != null;
   bool get isInitialized => _isInitialized;
   String? get userRole => _currentUser?.role;
-  String? get userLab => _currentUser?.lab; // NEW
+  String? get userLab => _currentUser?.lab;
   bool get isAdmin => _currentUser?.role == 'admin';
   bool get isUser => _currentUser?.role == 'user';
 
@@ -67,11 +67,11 @@ class AuthProvider extends ChangeNotifier {
           name: data['name'] ?? 'User',
           email: data['email'] ?? '',
           role: data['role'] ?? 'user',
-          lab: data['lab'], // ADD THIS LINE
+          lab: data['lab'],
         );
         print('User loaded successfully: ${_currentUser?.name}');
         print('   Role: ${_currentUser?.role}');
-        print('   Lab: ${_currentUser?.lab ?? "N/A"}'); // ADD THIS LINE
+        print('   Lab: ${_currentUser?.lab ?? "N/A"}');
         notifyListeners();
       } else {
         print('User document does not exist for $userId');

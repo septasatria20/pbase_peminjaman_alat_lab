@@ -27,7 +27,7 @@ class AddHistoryUseCase {
     required String status,
   }) async {
     try {
-      print("📤 [AddHistoryUseCase] Sending data to repository...");
+      print("[AddHistoryUseCase] Sending data to repository...");
       print({
         "userId": userId,
         "alat": alat,
@@ -48,9 +48,9 @@ class AddHistoryUseCase {
         status: status,
       );
 
-      print("✅ [AddHistoryUseCase] Data successfully sent to repository.");
+      print("[AddHistoryUseCase] Data successfully sent to repository.");
     } catch (e) {
-      print("❌ [AddHistoryUseCase] Error sending data to repository: $e");
+      print("[AddHistoryUseCase] Error sending data to repository: $e");
       rethrow;
     }
   }
@@ -74,16 +74,16 @@ class KonfirmasiPeminjamanUseCase {
   Future<void> call(String peminjamanId) async {
     try {
       print(
-        "📤 [KonfirmasiPeminjamanUseCase] Confirming peminjaman ID: $peminjamanId",
+        "[KonfirmasiPeminjamanUseCase] Confirming peminjaman ID: $peminjamanId",
       );
 
       await repository.konfirmasiPeminjaman(peminjamanId);
 
       print(
-        "✅ [KonfirmasiPeminjamanUseCase] Peminjaman confirmed successfully",
+        "[KonfirmasiPeminjamanUseCase] Peminjaman confirmed successfully",
       );
     } catch (e) {
-      print("❌ [KonfirmasiPeminjamanUseCase] Error: $e");
+      print("[KonfirmasiPeminjamanUseCase] Error: $e");
       rethrow;
     }
   }

@@ -20,8 +20,8 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
   final _namaController = TextEditingController();
   final _jumlahController = TextEditingController();
   final _deskripsiController = TextEditingController();
-  final _gambarController = TextEditingController(); // ADD THIS
-  
+  final _gambarController = TextEditingController();
+
   String _kategoriTerpilih = 'komponen';
   String _statusTerpilih = 'tersedia';
   bool _isLoading = false;
@@ -33,11 +33,7 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
     'lainnya',
   ];
 
-  final List<String> _statusList = [
-    'tersedia',
-    'dipinjam',
-    'rusak',
-  ];
+  final List<String> _statusList = ['tersedia', 'dipinjam', 'rusak'];
 
   @override
   void initState() {
@@ -47,9 +43,9 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
       _namaController.text = widget.alat!.nama;
       _jumlahController.text = widget.alat!.jumlah.toString();
       _deskripsiController.text = widget.alat!.deskripsi ?? '';
-      _gambarController.text = widget.alat!.gambar ?? ''; // ADD THIS
-      _kategoriTerpilih = widget.alat!.kategori.toLowerCase(); // ADD .toLowerCase()
-      _statusTerpilih = widget.alat!.status.toLowerCase(); // ADD .toLowerCase()
+      _gambarController.text = widget.alat!.gambar ?? '';
+      _kategoriTerpilih = widget.alat!.kategori.toLowerCase();
+      _statusTerpilih = widget.alat!.status.toLowerCase();
     }
   }
 
@@ -58,7 +54,7 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
     _namaController.dispose();
     _jumlahController.dispose();
     _deskripsiController.dispose();
-    _gambarController.dispose(); // ADD THIS
+    _gambarController.dispose();
     super.dispose();
   }
 
@@ -81,19 +77,22 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
         'status': _statusTerpilih,
         'ruang': adminLab,
         'deskripsi': _deskripsiController.text.trim(),
-        'gambar': _gambarController.text.trim().isEmpty 
-            ? null 
-            : _gambarController.text.trim(), // ADD THIS
+        'gambar': _gambarController.text.trim().isEmpty
+            ? null
+            : _gambarController.text.trim(),
       };
 
       if (isEditMode) {
         // Update existing alat
-        await firestore.collection('alat').doc(widget.alat!.id).update(alatData);
-        
+        await firestore
+            .collection('alat')
+            .doc(widget.alat!.id)
+            .update(alatData);
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('✅ Alat berhasil diupdate'),
+              content: Text('Alat berhasil diupdate'),
               backgroundColor: Colors.green,
             ),
           );
@@ -104,11 +103,11 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
           ...alatData,
           'createdAt': FieldValue.serverTimestamp(),
         });
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('✅ Alat berhasil ditambahkan'),
+              content: Text('Alat berhasil ditambahkan'),
               backgroundColor: Colors.green,
             ),
           );
@@ -116,15 +115,12 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
       }
 
       if (mounted) {
-        Navigator.of(context).pop(true); // Return true to indicate success
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❌ Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -141,9 +137,12 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
       appBar: AppBar(
         title: Text(
           isEditMode ? 'Edit Alat' : 'Tambah Alat',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        backgroundColor: colorMaroon,
+        backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -178,13 +177,16 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                     // Nama Alat
                     const Text(
                       'Nama Alat *',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _namaController,
                       decoration: InputDecoration(
-                        hintText: 'Contoh: Arduino Uno R3',
+                        hintText: 'Contoh: Proyektor',
                         filled: true,
                         fillColor: Colors.grey[50],
                         border: OutlineInputBorder(
@@ -197,7 +199,10 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: colorMaroon, width: 2),
+                          borderSide: const BorderSide(
+                            color: primaryColor,
+                            width: 2,
+                          ),
                         ),
                       ),
                       validator: (value) {
@@ -212,7 +217,10 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                     // Kategori
                     const Text(
                       'Kategori *',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
@@ -230,13 +238,18 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: colorMaroon, width: 2),
+                          borderSide: const BorderSide(
+                            color: primaryColor,
+                            width: 2,
+                          ),
                         ),
                       ),
                       items: _kategoriList.map((kategori) {
                         return DropdownMenuItem(
                           value: kategori,
-                          child: Text(kategori[0].toUpperCase() + kategori.substring(1)),
+                          child: Text(
+                            kategori[0].toUpperCase() + kategori.substring(1),
+                          ),
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -248,7 +261,10 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                     // Jumlah
                     const Text(
                       'Jumlah Stok *',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
@@ -268,7 +284,10 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: colorMaroon, width: 2),
+                          borderSide: const BorderSide(
+                            color: primaryColor,
+                            width: 2,
+                          ),
                         ),
                       ),
                       validator: (value) {
@@ -289,7 +308,10 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                     // Status
                     const Text(
                       'Status *',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
@@ -307,13 +329,18 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: colorMaroon, width: 2),
+                          borderSide: const BorderSide(
+                            color: primaryColor,
+                            width: 2,
+                          ),
                         ),
                       ),
                       items: _statusList.map((status) {
                         return DropdownMenuItem(
-                          value: status, // CHANGE: Remove capitalize, keep lowercase
-                          child: Text(status[0].toUpperCase() + status.substring(1)), // Display capitalize
+                          value: status,
+                          child: Text(
+                            status[0].toUpperCase() + status.substring(1),
+                          ), // Display capitalize
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -325,7 +352,10 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                     // Gambar URL (NEW)
                     const Text(
                       'Link Gambar (Google Drive)',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
@@ -333,7 +363,10 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                       keyboardType: TextInputType.url,
                       decoration: InputDecoration(
                         hintText: 'https://drive.google.com/uc?id=...',
-                        prefixIcon: const Icon(Icons.image_outlined, color: colorMaroon),
+                        prefixIcon: const Icon(
+                          Icons.image_outlined,
+                          color: primaryColor,
+                        ),
                         filled: true,
                         fillColor: Colors.grey[50],
                         border: OutlineInputBorder(
@@ -346,10 +379,17 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: colorMaroon, width: 2),
+                          borderSide: const BorderSide(
+                            color: primaryColor,
+                            width: 2,
+                          ),
                         ),
-                        helperText: 'Format: https://drive.google.com/uc?id=FILE_ID',
-                        helperStyle: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                        helperText:
+                            'Format: https://drive.google.com/uc?id=FILE_ID',
+                        helperStyle: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
                       ),
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
@@ -369,7 +409,10 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                         children: [
                           const Text(
                             'Preview Gambar',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Container(
@@ -388,30 +431,44 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                                 errorBuilder: (context, error, stackTrace) {
                                   return Center(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        Icon(Icons.broken_image, size: 48, color: Colors.grey[400]),
+                                        Icon(
+                                          Icons.broken_image,
+                                          size: 48,
+                                          color: Colors.grey[400],
+                                        ),
                                         const SizedBox(height: 8),
                                         Text(
                                           'Gagal memuat gambar',
-                                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 12,
+                                          ),
                                         ),
                                       ],
                                     ),
                                   );
                                 },
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Center(
-                                    child: CircularProgressIndicator(
-                                      value: loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress.cumulativeBytesLoaded /
-                                              loadingProgress.expectedTotalBytes!
-                                          : null,
-                                      color: colorMaroon,
-                                    ),
-                                  );
-                                },
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          value:
+                                              loadingProgress
+                                                      .expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                              : null,
+                                          color: primaryColor,
+                                        ),
+                                      );
+                                    },
                               ),
                             ),
                           ),
@@ -422,7 +479,10 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                     // Deskripsi
                     const Text(
                       'Deskripsi (Opsional)',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
@@ -442,7 +502,10 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: colorMaroon, width: 2),
+                          borderSide: const BorderSide(
+                            color: primaryColor,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -456,11 +519,11 @@ class _AddEditAlatScreenState extends State<AddEditAlatScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   gradient: LinearGradient(
-                    colors: [colorMaroon, colorMaroonDark],
+                    colors: [primaryColor, primaryColor.withOpacity(0.8)],
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: colorMaroon.withOpacity(0.3),
+                      color: primaryColor.withOpacity(0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),

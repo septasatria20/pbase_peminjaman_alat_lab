@@ -13,8 +13,8 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<User> register(String email, String password, String name) async {
     try {
-      print('🔵 REGISTER - Email: $email');
-      print('🔵 REGISTER - Name: $name');
+      print('REGISTER - Email: $email');
+      print('REGISTER - Name: $name');
       
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
@@ -25,15 +25,15 @@ class AuthRepositoryImpl implements AuthRepository {
         throw Exception('Registrasi gagal. Silakan coba lagi.');
       }
 
-      // Create user model with the name parameter
+      // Create user model
       final user = UserModel(
         id: firebaseUser.uid,
-        name: name, // Make sure this is the full name from input
+        name: name,
         email: firebaseUser.email ?? '',
         role: 'user',
       );
 
-      print('🔵 REGISTER - User Model Created:');
+      print('   REGISTER - User Model Created:');
       print('   ID: ${user.id}');
       print('   Name: ${user.name}');
       print('   Email: ${user.email}');
@@ -48,7 +48,7 @@ class AuthRepositoryImpl implements AuthRepository {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      print('✅ REGISTER - Data saved to Firestore successfully');
+      print('REGISTER - Data saved to Firestore successfully');
 
       return user;
     } on firebase_auth.FirebaseAuthException catch (e) {
@@ -88,7 +88,6 @@ class AuthRepositoryImpl implements AuthRepository {
       final userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
       
       if (!userDoc.exists) {
-        // If user data doesn't exist in Firestore, create default data
         final defaultUser = UserModel(
           id: firebaseUser.uid,
           name: firebaseUser.email?.split('@')[0] ?? 'User',

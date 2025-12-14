@@ -15,7 +15,6 @@ class ChatProvider extends ChangeNotifier {
     return _firestore
         .collection('chats')
         .where('peminjamanId', isEqualTo: peminjamanId)
-        // REMOVE .orderBy to avoid composite index requirement
         .snapshots()
         .map((snapshot) {
       // Sort manually in client side
@@ -48,9 +47,9 @@ class ChatProvider extends ChangeNotifier {
         'timestamp': FieldValue.serverTimestamp(),
         'isRead': false,
       });
-      print('✅ Message sent successfully');
+      print('Message sent successfully');
     } catch (e) {
-      print('❌ Error sending message: $e');
+      print('Error sending message: $e');
       rethrow;
     }
   }
@@ -58,7 +57,7 @@ class ChatProvider extends ChangeNotifier {
   /// Mark messages as read for current user
   Future<void> markMessagesAsRead(String peminjamanId, String currentUserId) async {
     try {
-      // SIMPLIFIED: Only filter by peminjamanId, then check in-memory
+      // Filter by peminjamanId, then check in-memory
       final querySnapshot = await _firestore
           .collection('chats')
           .where('peminjamanId', isEqualTo: peminjamanId)
@@ -79,10 +78,9 @@ class ChatProvider extends ChangeNotifier {
       }
 
       await batch.commit();
-      print('✅ Messages marked as read successfully');
+      print('Messages marked as read successfully');
     } catch (e) {
-      print('❌ Error marking messages as read: $e');
-      // Don't throw - just log, so chat still works
+      print('Error marking messages as read: $e');
     }
   }
 

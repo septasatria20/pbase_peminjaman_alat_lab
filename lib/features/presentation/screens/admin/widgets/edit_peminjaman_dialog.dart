@@ -35,16 +35,15 @@ class _EditPeminjamanDialogState extends State<EditPeminjamanDialog> {
             .collection('alat')
             .doc(alat['id'])
             .get();
-        
+
         if (doc.exists) {
           final data = doc.data()!;
           _stokTersedia[alat['id']] = data['jumlah'] as int;
         }
       }
-      
+
       setState(() => _isLoading = false);
     } catch (e) {
-      print('Error loading stok: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -69,7 +68,7 @@ class _EditPeminjamanDialogState extends State<EditPeminjamanDialog> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: colorMaroon),
+            CircularProgressIndicator(color: primaryColor),
             const SizedBox(height: 16),
             const Text('Memuat data alat...'),
           ],
@@ -81,7 +80,7 @@ class _EditPeminjamanDialogState extends State<EditPeminjamanDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Row(
         children: const [
-          Icon(Icons.edit, color: colorMaroon),
+          Icon(Icons.edit, color: primaryColor),
           SizedBox(width: 8),
           Text('Edit Peminjaman'),
         ],
@@ -112,12 +111,11 @@ class _EditPeminjamanDialogState extends State<EditPeminjamanDialog> {
                         .doc(alat['id'])
                         .get(),
                     builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const SizedBox();
-                      }
+                      if (!snapshot.hasData) return const SizedBox();
 
-                      final alatData = snapshot.data!.data() as Map<String, dynamic>;
-                      
+                      final alatData =
+                          snapshot.data!.data() as Map<String, dynamic>;
+
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         color: tidakCukup ? Colors.red.shade50 : Colors.white,
@@ -137,7 +135,10 @@ class _EditPeminjamanDialogState extends State<EditPeminjamanDialog> {
                                         height: 50,
                                         fit: BoxFit.cover,
                                         errorBuilder: (_, __, ___) =>
-                                            const Icon(Icons.inventory, size: 50),
+                                            const Icon(
+                                              Icons.inventory,
+                                              size: 50,
+                                            ),
                                       ),
                                     )
                                   else
@@ -145,7 +146,8 @@ class _EditPeminjamanDialogState extends State<EditPeminjamanDialog> {
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           alatData['nama'] ?? 'Tanpa Nama',
@@ -159,7 +161,9 @@ class _EditPeminjamanDialogState extends State<EditPeminjamanDialog> {
                                           'Stok tersedia: $stok',
                                           style: TextStyle(
                                             fontSize: 12,
-                                            color: tidakCukup ? Colors.red : Colors.green,
+                                            color: tidakCukup
+                                                ? Colors.red
+                                                : secondaryColor,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -167,23 +171,33 @@ class _EditPeminjamanDialogState extends State<EditPeminjamanDialog> {
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                    ),
                                     onPressed: () => _removeAlat(index),
-                                    tooltip: 'Hapus',
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 12),
                               Row(
                                 children: [
-                                  const Text('Jumlah: ', style: TextStyle(fontSize: 13)),
+                                  const Text(
+                                    'Jumlah:',
+                                    style: TextStyle(fontSize: 13),
+                                  ),
                                   IconButton(
-                                    icon: const Icon(Icons.remove_circle_outline),
+                                    icon: const Icon(
+                                      Icons.remove_circle_outline,
+                                    ),
                                     onPressed: jumlahDiminta > 1
-                                        ? () => _updateJumlah(index, jumlahDiminta - 1)
+                                        ? () => _updateJumlah(
+                                            index,
+                                            jumlahDiminta - 1,
+                                          )
                                         : null,
                                     iconSize: 20,
-                                    color: colorMaroon,
+                                    color: primaryColor,
                                   ),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
@@ -205,23 +219,14 @@ class _EditPeminjamanDialogState extends State<EditPeminjamanDialog> {
                                   IconButton(
                                     icon: const Icon(Icons.add_circle_outline),
                                     onPressed: jumlahDiminta < stok
-                                        ? () => _updateJumlah(index, jumlahDiminta + 1)
+                                        ? () => _updateJumlah(
+                                            index,
+                                            jumlahDiminta + 1,
+                                          )
                                         : null,
                                     iconSize: 20,
-                                    color: colorMaroon,
+                                    color: primaryColor,
                                   ),
-                                  if (tidakCukup)
-                                    Expanded(
-                                      child: Text(
-                                        'Melebihi stok!',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.red,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        textAlign: TextAlign.end,
-                                      ),
-                                    ),
                                 ],
                               ),
                             ],
@@ -244,31 +249,9 @@ class _EditPeminjamanDialogState extends State<EditPeminjamanDialog> {
         ElevatedButton(
           onPressed: _editableAlat.isEmpty
               ? null
-              : () {
-                  // Check if any alat exceeds stock
-                  bool hasError = false;
-                  for (var alat in _editableAlat) {
-                    final stok = _stokTersedia[alat['id']] ?? 0;
-                    if (alat['jumlah'] > stok) {
-                      hasError = true;
-                      break;
-                    }
-                  }
-
-                  if (hasError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Beberapa alat melebihi stok tersedia'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
-                  }
-
-                  Navigator.pop(context, _editableAlat);
-                },
+              : () => Navigator.pop(context, _editableAlat),
           style: ElevatedButton.styleFrom(
-            backgroundColor: colorMaroon,
+            backgroundColor: primaryColor,
             foregroundColor: Colors.white,
           ),
           child: const Text('Simpan & Setujui'),

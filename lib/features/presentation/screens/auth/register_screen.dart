@@ -4,15 +4,6 @@ import '../../providers/auth_provider.dart';
 import '../../style/color.dart';
 import '../main/dashboard_screen.dart';
 
-// Tambahkan tema baru di awal file
-const Color themeGreen = Color(0xFF4ADE80);
-const Color themeBlue = Color(0xFF38BDF8);
-const LinearGradient themeGradient = LinearGradient(
-  colors: [themeGreen, themeBlue],
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-);
-
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
 
@@ -120,7 +111,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
               child: ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: colorMaroon,
+                  backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -183,7 +174,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Logo dengan gambar custom
+                    // Logo
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
