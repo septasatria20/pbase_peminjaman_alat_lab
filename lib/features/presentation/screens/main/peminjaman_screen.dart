@@ -114,15 +114,21 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
 
   Future<void> _submitPeminjaman() async {
     if (_selectedItems.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Pilih minimal 1 alat')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pilih minimal 1 alat'),
+          backgroundColor: Colors.orange,
+        ),
+      );
       return;
     }
 
     if (_alasanController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Alasan tidak boleh kosong')),
+        const SnackBar(
+          content: Text('Alasan tidak boleh kosong'),
+          backgroundColor: Colors.orange,
+        ),
       );
       return;
     }
@@ -134,7 +140,9 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
       final userId =
           authProvider.currentUser?.id ?? authProvider.firebaseUser?.uid;
 
-      if (userId == null) throw Exception('User not found');
+      if (userId == null) {
+        throw Exception('User not found');
+      }
 
       final alatList = _selectedItems.entries
           .map((e) => {'id': e.key, 'jumlah': e.value})
@@ -152,11 +160,43 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
       });
 
       if (mounted) {
-        context.read<HistoryProvider>().fetchUserHistory(userId);
+        // Refresh history
+        await context.read<HistoryProvider>().fetchUserHistory(userId);
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text('Peminjaman berhasil diajukan!'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+
+        // Navigate back
         Navigator.of(context).pop();
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengajukan peminjaman: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
