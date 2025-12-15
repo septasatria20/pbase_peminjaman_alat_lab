@@ -290,13 +290,18 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                 child: alatFiltered.isEmpty
                     ? const Center(child: Text('Tidak ada alat tersedia'))
                     : GridView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.only(
+                          left: 16,
+                          right: 16,
+                          top: 16,
+                          bottom: _selectedItems.isNotEmpty ? 300 : 16,
+                        ),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
-                              childAspectRatio: 0.75,
+                              childAspectRatio: 0.7,
                             ),
                         itemCount: alatFiltered.length,
                         itemBuilder: (context, index) {
@@ -324,7 +329,7 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                   ? themeBlue.withOpacity(0.05)
                                   : Colors.white,
                               child: Padding(
-                                padding: const EdgeInsets.all(12.0),
+                                padding: const EdgeInsets.all(10.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -334,13 +339,13 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                         child: Image.network(
                                           alat.gambar!,
                                           width: double.infinity,
-                                          height: 80,
+                                          height: 70,
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) {
                                                 return Container(
                                                   width: double.infinity,
-                                                  height: 80,
+                                                  height: 70,
                                                   decoration: BoxDecoration(
                                                     gradient: themeGradient
                                                         .scale(0.2),
@@ -351,7 +356,7 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                                   ),
                                                   child: const Icon(
                                                     Icons.inventory,
-                                                    size: 40,
+                                                    size: 35,
                                                     color: themeBlue,
                                                   ),
                                                 );
@@ -361,7 +366,7 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                     else
                                       Container(
                                         width: double.infinity,
-                                        height: 80,
+                                        height: 70,
                                         decoration: BoxDecoration(
                                           gradient: themeGradient.scale(0.2),
                                           borderRadius: BorderRadius.circular(
@@ -370,7 +375,7 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                         ),
                                         child: const Icon(
                                           Icons.inventory,
-                                          size: 40,
+                                          size: 35,
                                           color: themeBlue,
                                         ),
                                       ),
@@ -381,16 +386,16 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 14,
+                                        fontSize: 13,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       'Stok: ${alat.jumlah}',
-                                      style: const TextStyle(fontSize: 12),
+                                      style: const TextStyle(fontSize: 11),
                                     ),
                                     if (isSelected) ...[
-                                      const SizedBox(height: 8),
+                                      const SizedBox(height: 6),
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
@@ -400,7 +405,9 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                               Icons.remove_circle,
                                             ),
                                             color: themeBlue,
-                                            iconSize: 24,
+                                            iconSize: 18,
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
                                             onPressed: quantity > 1
                                                 ? () => _updateQuantity(
                                                     alat.id,
@@ -411,26 +418,32 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                           ),
                                           Container(
                                             padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 4,
+                                              horizontal: 8,
+                                              vertical: 3,
+                                            ),
+                                            margin: const EdgeInsets.symmetric(
+                                              horizontal: 2,
                                             ),
                                             decoration: BoxDecoration(
                                               gradient: themeGradient,
                                               borderRadius:
-                                                  BorderRadius.circular(8),
+                                                  BorderRadius.circular(6),
                                             ),
                                             child: Text(
                                               '$quantity',
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.bold,
+                                                fontSize: 11,
                                               ),
                                             ),
                                           ),
                                           IconButton(
                                             icon: const Icon(Icons.add_circle),
                                             color: themeBlue,
-                                            iconSize: 24,
+                                            iconSize: 18,
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
                                             onPressed: quantity < alat.jumlah
                                                 ? () => _updateQuantity(
                                                     alat.id,
@@ -442,11 +455,11 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                         ],
                                       ),
                                     ] else
-                                      const SizedBox(height: 8),
+                                      const SizedBox(height: 6),
                                     Container(
                                       width: double.infinity,
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 6,
+                                        vertical: 5,
                                       ),
                                       decoration: BoxDecoration(
                                         gradient: isSelected
@@ -465,7 +478,7 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                                                 ? Colors.white
                                                 : Colors.black87,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 12,
+                                            fontSize: 11,
                                           ),
                                         ),
                                       ),
@@ -482,7 +495,15 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
               // Bottom Sheet Form
               if (_selectedItems.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.4,
+                  ),
+                  padding: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 12,
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 12,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     boxShadow: [
@@ -493,117 +514,131 @@ class _PeminjamanScreenState extends State<PeminjamanScreen> {
                       ),
                     ],
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () async {
-                                await _selectTanggalPinjam(context);
-                              },
-                              icon: const Icon(
-                                Icons.calendar_today,
-                                size: 18,
-                                color: themeBlue,
-                              ),
-                              label: Text(
-                                DateFormat('dd/MM/yy').format(_tanggalPinjam),
-                                style: const TextStyle(
-                                  fontSize: 12,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () async {
+                                  await _selectTanggalPinjam(context);
+                                },
+                                icon: const Icon(
+                                  Icons.calendar_today,
+                                  size: 16,
                                   color: themeBlue,
                                 ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: themeBlue),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () async {
-                                await _selectTanggalKembali(context);
-                              },
-                              icon: const Icon(
-                                Icons.event,
-                                size: 18,
-                                color: themeBlue,
-                              ),
-                              label: Text(
-                                DateFormat('dd/MM/yy').format(_tanggalKembali),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: themeBlue,
+                                label: Text(
+                                  DateFormat('dd/MM/yy').format(_tanggalPinjam),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: themeBlue,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: themeBlue),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 8,
+                                  ),
                                 ),
                               ),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: themeBlue),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () async {
+                                  await _selectTanggalKembali(context);
+                                },
+                                icon: const Icon(
+                                  Icons.event,
+                                  size: 16,
+                                  color: themeBlue,
+                                ),
+                                label: Text(
+                                  DateFormat('dd/MM/yy').format(_tanggalKembali),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: themeBlue,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: themeBlue),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 8,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _alasanController,
-                        maxLines: 2,
-                        decoration: InputDecoration(
-                          hintText: 'Alasan peminjaman...',
-                          filled: true,
-                          fillColor: Colors.grey[50],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: themeBlue,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          gradient: themeGradient,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: themeBlue.withOpacity(0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _submitPeminjaman,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          controller: _alasanController,
+                          maxLines: 2,
+                          decoration: InputDecoration(
+                            hintText: 'Alasan peminjaman...',
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: themeBlue,
+                                width: 2,
+                              ),
+                            ),
                           ),
-                          child: _isLoading
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
-                              : const Text(
-                                  'Ajukan Peminjaman',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 10),
+                        Container(
+                          width: double.infinity,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: themeGradient,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: themeBlue.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _submitPeminjaman,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                : const Text(
+                                    'Ajukan Peminjaman',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],

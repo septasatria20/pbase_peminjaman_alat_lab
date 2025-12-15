@@ -11,7 +11,6 @@ import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/alat_p
 import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/auth_provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/providers/history_provider.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/style/color.dart';
-import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/ai/ai_helper_screen.dart';
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/auth/login_screen.dart' hide themeGradient;
 import 'package:pbase_peminjaman_alat_lab/features/presentation/screens/main/detail_alat_screen.dart';
 
@@ -143,35 +142,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ],
             ),
-      floatingActionButton: _selectedIndex == 0
-          ? Container(
-              decoration: BoxDecoration(
-                gradient: themeGradient,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withOpacity(0.4),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: FloatingActionButton(
-                heroTag: 'ai_helper_fab',
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AiHelperScreen(),
-                    ),
-                  );
-                },
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                foregroundColor: Colors.white,
-                child: const Icon(Icons.assistant_rounded),
-              ),
-            )
-          : null,
       body: _getSelectedContent(),
 
       bottomNavigationBar: BottomNavigationBar(
