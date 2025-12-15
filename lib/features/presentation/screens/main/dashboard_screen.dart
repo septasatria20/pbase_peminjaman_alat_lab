@@ -1272,10 +1272,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           status == 'menunggu validasi pengembalian';
     }).toList();
 
-    final filteredList = activeList.where((history) {
-      if (_statusTerpilih == "semua") return true;
-      return _statusMatches(history.status, _statusTerpilih);
-    }).toList();
+    // Apply filter
+    List<HistoryEntity> filteredList;
+    if (_statusTerpilih == "semua") {
+      filteredList = activeList;
+    } else {
+      filteredList = activeList.where((history) {
+        return _statusMatches(history.status, _statusTerpilih);
+      }).toList();
+    }
 
     if (activeList.isEmpty) {
       return _buildEmptyRiwayat();
@@ -1294,7 +1299,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _buildStatusList(),
           const SizedBox(height: 24),
           if (filteredList.isEmpty)
-            _buildEmptyRiwayat()
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.filter_list_off,
+                      size: 64,
+                      color: Colors.grey[300],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Tidak ada peminjaman dengan status ini',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+            )
           else
             _buildHistoryListView(filteredList, showReturnButton: true),
         ],
@@ -1309,14 +1333,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return status == 'dikembalikan' || status == 'ditolak';
     }).toList();
 
-    final filteredList = completeList.where((history) {
-      if (_statusTerpilih == "semua") return true;
-      final status = history.status.toLowerCase();
+    // Apply filter
+    List<HistoryEntity> filteredList;
+    if (_statusTerpilih == "semua") {
+      filteredList = completeList;
+    } else {
       final filter = _statusTerpilih.toLowerCase();
-      if (filter == "dikembalikan" && status == "dikembalikan") return true;
-      if (filter == "ditolak" && status == "ditolak") return true;
-      return false;
-    }).toList();
+      filteredList = completeList.where((history) {
+        final status = history.status.toLowerCase();
+        if (filter == "dikembalikan" && status == "dikembalikan") return true;
+        if (filter == "ditolak" && status == "ditolak") return true;
+        return false;
+      }).toList();
+    }
 
     if (completeList.isEmpty) {
       return Center(
@@ -1395,9 +1424,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
-                child: Text(
-                  'Tidak ada riwayat dengan status ini',
-                  style: TextStyle(color: Colors.grey[600]),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.filter_list_off,
+                      size: 64,
+                      color: Colors.grey[300],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Tidak ada riwayat dengan status ini',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ],
                 ),
               ),
             )

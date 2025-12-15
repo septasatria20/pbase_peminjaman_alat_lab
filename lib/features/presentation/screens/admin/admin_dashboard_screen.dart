@@ -941,22 +941,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             // Header + chat
             Row(
               children: [
-                Icon(labStyle["icon"], color: labStyle["text"], size: 24),
+                Icon(labStyle["icon"], color: labStyle["text"], size: 22),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     "Lab: $lab",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                       color: labStyle["text"],
                     ),
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.chat_bubble_outline),
+                  icon: const Icon(Icons.chat_bubble_outline, size: 20),
                   color: primaryColor,
-                  tooltip: 'Chat dengan peminjam',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  tooltip: 'Chat',
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -990,7 +992,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       color: primaryColor.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.person, color: primaryColor, size: 22),
+                    child: const Icon(Icons.person, color: primaryColor, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -1008,12 +1010,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         const SizedBox(height: 2),
                         Text(
                           userName,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           userEmail,
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
@@ -1034,8 +1036,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Tanggal Pinjam: ${DateFormat('dd-MM-yyyy').format(tanggalPinjam)}"),
-                      Text("Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(tanggalKembali)}"),
+                      Text("Tanggal Pinjam: ${DateFormat('dd-MM-yyyy').format(tanggalPinjam)}", style: const TextStyle(fontSize: 12)),
+                      Text("Tanggal Kembali: ${DateFormat('dd-MM-yyyy').format(tanggalKembali)}", style: const TextStyle(fontSize: 12)),
                     ],
                   ),
                 ),
@@ -1044,31 +1046,29 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             const SizedBox(height: 8),
 
             // Badge
-            Row(
-              children: [
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade700,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'Menunggu Validasi',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade700,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Menunggu Validasi',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ],
+              ),
             ),
 
             const SizedBox(height: 12),
             const Text(
               "Alat:",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
 
@@ -1109,6 +1109,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       leading: alatData['gambar'] != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(8),
@@ -1122,8 +1123,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               ),
                             )
                           : const Icon(Icons.inventory, size: 50),
-                      title: Text(alatData['nama'] ?? 'Tanpa Nama'),
-                      subtitle: Text('Jumlah: $qty'),
+                      title: Text(alatData['nama'] ?? 'Tanpa Nama', style: const TextStyle(fontSize: 13)),
+                      subtitle: Text('Jumlah: $qty', style: const TextStyle(fontSize: 11)),
                     ),
                   );
                 },
@@ -1137,26 +1138,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _showTolakPengembalianDialog(peminjamanId),
-                    icon: const Icon(Icons.cancel),
-                    label: const Text('Tolak'),
+                    icon: const Icon(Icons.cancel, size: 18),
+                    label: const Text('Tolak', style: TextStyle(fontSize: 13)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _showTerimaPengembalianDialog(peminjamanId),
-                    icon: const Icon(Icons.check_circle),
-                    label: const Text('Terima'),
+                    icon: const Icon(Icons.check_circle, size: 18),
+                    label: const Text('Terima', style: TextStyle(fontSize: 13)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
@@ -1384,8 +1385,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               ),
                             )
                           : const Icon(Icons.inventory, size: 50),
-                      title: Text(alatData['nama'] ?? 'Tanpa Nama'),
-                      subtitle: Text('Jumlah: $qty'),
+                      title: Text(alatData['nama'] ?? 'Tanpa Nama', style: const TextStyle(fontSize: 13)),
+                      subtitle: Text('Jumlah: $qty', style: const TextStyle(fontSize: 11)),
                     ),
                   );
                 },
@@ -1726,7 +1727,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           children: [
             Icon(Icons.cancel, color: Colors.red),
             SizedBox(width: 8),
-            Text('Tolak Peminjaman'),
+            Expanded(child: Text('Tolak Peminjaman')),
           ],
         ),
         content: Column(
@@ -1774,11 +1775,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              if (alasanController.text.trim().isEmpty) {
+              final reason = alasanController.text.trim();
+              
+              if (reason.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Alasan tidak boleh kosong'),
-                    backgroundColor: Colors.red,
+                    backgroundColor: Colors.orange,
                   ),
                 );
                 return;
@@ -1786,7 +1789,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
               Navigator.pop(context);
 
-              // Loading
+              // Loading dialog
+              if (!mounted) return;
               showDialog(
                 context: context,
                 barrierDismissible: false,
@@ -1804,9 +1808,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               );
 
               try {
-                final reason = alasanController.text.trim();
-
-                await FirebaseFirestore.instance.collection('peminjaman').doc(peminjamanId).update({
+                // Update status to ditolak
+                await FirebaseFirestore.instance
+                    .collection('peminjaman')
+                    .doc(peminjamanId)
+                    .update({
                   'status': 'ditolak',
                   'alasanPenolakan': reason,
                   'updatedAt': FieldValue.serverTimestamp(),
@@ -1834,25 +1840,37 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 // Refresh provider list
                 await historyProvider.fetchHistoryKonfirmasiPeminjaman();
 
-                if (!context.mounted) return;
+                if (!mounted) return;
 
-                Navigator.pop(context); // close loading
+                // Close loading dialog
+                Navigator.pop(context);
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Peminjaman ditolak & alasan dikirim ke peminjam'),
+                    content: Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.white),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text('Peminjaman ditolak & alasan dikirim ke peminjam'),
+                        ),
+                      ],
+                    ),
                     backgroundColor: Colors.green,
+                    duration: Duration(seconds: 3),
                   ),
                 );
               } catch (e) {
-                if (!context.mounted) return;
+                if (!mounted) return;
 
-                Navigator.pop(context); // close loading
+                // Close loading dialog
+                Navigator.pop(context);
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Error: $e'),
+                    content: Text('Gagal menolak: $e'),
                     backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
                   ),
                 );
               }
@@ -1882,7 +1900,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           children: [
             Icon(Icons.check_circle, color: Colors.green),
             SizedBox(width: 8),
-            Text('Terima Pengembalian'),
+            Expanded(child: Text('Terima Pengembalian')),
           ],
         ),
         content: Column(
@@ -1911,9 +1929,29 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             onPressed: () async {
               Navigator.pop(context);
 
+              // Loading dialog
+              if (!mounted) return;
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: primaryColor),
+                      const SizedBox(height: 16),
+                      const Text('Memproses pengembalian...'),
+                    ],
+                  ),
+                ),
+              );
+
               try {
                 final historyProvider = context.read<HistoryProvider>();
-                final notes = notesController.text.trim().isEmpty ? null : notesController.text.trim();
+                final notes = notesController.text.trim().isEmpty 
+                    ? null 
+                    : notesController.text.trim();
 
                 await historyProvider.confirmReturn(peminjamanId, notes: notes);
 
@@ -1937,18 +1975,35 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 if (!mounted) return;
 
+                // Close loading dialog
+                Navigator.pop(context);
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Pengembalian diterima & konfirmasi dikirim'),
+                    content: Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.white),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text('Pengembalian diterima & konfirmasi dikirim'),
+                        ),
+                      ],
+                    ),
                     backgroundColor: Colors.green,
+                    duration: Duration(seconds: 3),
                   ),
                 );
               } catch (e) {
                 if (!mounted) return;
+
+                // Close loading dialog
+                Navigator.pop(context);
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Error: $e'),
+                    content: Text('Gagal menerima: $e'),
                     backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
                   ),
                 );
               }
@@ -1978,7 +2033,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           children: [
             Icon(Icons.cancel, color: Colors.red),
             SizedBox(width: 8),
-            Text('Tolak Pengembalian'),
+            Expanded(child: Text('Tolak Pengembalian')),
           ],
         ),
         content: Column(
@@ -2005,11 +2060,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              if (reasonController.text.trim().isEmpty) {
+              final reason = reasonController.text.trim();
+              
+              if (reason.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Alasan tidak boleh kosong'),
-                    backgroundColor: Colors.red,
+                    backgroundColor: Colors.orange,
                   ),
                 );
                 return;
@@ -2017,8 +2074,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
               Navigator.pop(context);
 
+              // Loading dialog
+              if (!mounted) return;
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: primaryColor),
+                      const SizedBox(height: 16),
+                      const Text('Memproses penolakan...'),
+                    ],
+                  ),
+                ),
+              );
+
               try {
-                final reason = reasonController.text.trim();
                 final historyProvider = context.read<HistoryProvider>();
 
                 await historyProvider.rejectReturn(peminjamanId, reason);
@@ -2043,18 +2117,35 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 if (!mounted) return;
 
+                // Close loading dialog
+                Navigator.pop(context);
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Pengembalian ditolak & alasan dikirim'),
+                    content: Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.white),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text('Pengembalian ditolak & alasan dikirim'),
+                        ),
+                      ],
+                    ),
                     backgroundColor: Colors.orange,
+                    duration: Duration(seconds: 3),
                   ),
                 );
               } catch (e) {
                 if (!mounted) return;
+
+                // Close loading dialog  
+                Navigator.pop(context);
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Error: $e'),
+                    content: Text('Gagal menolak: $e'),
                     backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
                   ),
                 );
               }
